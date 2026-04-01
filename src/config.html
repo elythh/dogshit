@@ -500,21 +500,12 @@
             <button class="btn-copy-url" id="btn-copy-bar">Copier</button>
         </div>
 
-        <div class="output-box url-row" style="margin-top:4px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.07)">
-            <div>
-                <div class="output-label" style="color:#ff6b6b">Réinitialiser à zéro — Widget complet</div>
-                <div class="url-preview">https://twitch.elyth.xyz/<span>?reset&config=</span><span id="url-reset-full">…</span></div>
-            </div>
-            <button class="btn-copy-url" id="btn-copy-reset-full">Copier</button>
+        <div style="display:flex; gap:10px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.07)">
+            <button class="btn-copy-url" id="btn-copy-reset-full" style="flex:1">↺ Reset — Widget complet</button>
+            <button class="btn-copy-url" id="btn-copy-reset-bar"  style="flex:1">↺ Reset — Barre seulement</button>
         </div>
-
-        <div class="output-box url-row">
-            <div>
-                <div class="output-label" style="color:#ff6b6b">Réinitialiser à zéro — Barre seulement</div>
-                <div class="url-preview">https://twitch.elyth.xyz/bar<span>?reset&config=</span><span id="url-reset-bar">…</span></div>
-            </div>
-            <button class="btn-copy-url" id="btn-copy-reset-bar">Copier</button>
-        </div>
+        <span id="url-reset-full" style="display:none"></span>
+        <span id="url-reset-bar"  style="display:none"></span>
     </div>
 
 </div>

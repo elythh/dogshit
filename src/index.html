@@ -36,12 +36,6 @@
             overflow: visible;
         }
 
-        .goal-row:nth-child(1) { animation-delay: 0.00s; }
-        .goal-row:nth-child(2) { animation-delay: 0.07s; }
-        .goal-row:nth-child(3) { animation-delay: 0.14s; }
-        .goal-row:nth-child(4) { animation-delay: 0.21s; }
-        .goal-row:nth-child(5) { animation-delay: 0.28s; }
-
         @keyframes fadeSlideIn {
             from { opacity: 0; transform: translateX(-18px); }
             to   { opacity: 1; transform: translateX(0); }
@@ -197,49 +191,13 @@
     </style>
 </head>
 <body>
-<div class="widget">
+<div class="widget" id="widget">
+    <!-- Goals are rendered by JS from the ?config= param -->
 
-    <!-- ── Goals — edit labels & thresholds as needed ── -->
-    <div class="goal-row" data-threshold="200">
-        <div class="radio"><div class="radio-inner"></div></div>
-        <span class="goal-label">Play Horror Game (Lights Off)</span>
-        <span class="goal-amount">$200</span>
-        <div class="thank-you"></div>
-    </div>
-
-    <div class="goal-row" data-threshold="250">
-        <div class="radio"><div class="radio-inner"></div></div>
-        <span class="goal-label">Let Chat Write Tweet</span>
-        <span class="goal-amount">$250</span>
-        <div class="thank-you"></div>
-    </div>
-
-    <div class="goal-row" data-threshold="300">
-        <div class="radio"><div class="radio-inner"></div></div>
-        <span class="goal-label">Read Old Tumblr Account</span>
-        <span class="goal-amount">$300</span>
-        <div class="thank-you"></div>
-    </div>
-
-    <div class="goal-row" data-threshold="500">
-        <div class="radio"><div class="radio-inner"></div></div>
-        <span class="goal-label">Dye Hair</span>
-        <span class="goal-amount">$500</span>
-        <div class="thank-you"></div>
-    </div>
-
-    <div class="goal-row" data-threshold="600">
-        <div class="radio"><div class="radio-inner"></div></div>
-        <span class="goal-label">Cursed Eating Challenge</span>
-        <span class="goal-amount">$600</span>
-        <div class="thank-you"></div>
-    </div>
-
-    <!-- ── Bottom progress bar ── -->
     <div class="bottom-bar">
         <span class="bottom-icon">🏆</span>
         <span class="bottom-label">Community Goals</span>
-        <span class="bottom-amount" id="bottom-amount">$0 / 600</span>
+        <span class="bottom-amount" id="bottom-amount">$0 / 0</span>
         <div class="progress-wrap">
             <div class="progress-fill" id="progress-fill" style="width:0%"></div>
         </div>
@@ -247,25 +205,79 @@
 </div>
 
 <script>
-    // ── CONFIGURATION ──────────────────────────────────────────
-    const TOKEN       = 'REDACTED';
-    const GOAL_TARGET = 600;
-    const SUB_VALUE   = 5;
+    // ── CONFIG ─────────────────────────────────────────────────
+    // Pass config as a base64-encoded JSON string in the URL:
+    //   ?config=<base64(JSON)>
+    //
+    // Config shape:
+    // {
+    //   "token":       "YOUR_STREAMLABS_TOKEN",
+    //   "startAmount": 0,          // pre-seed the counter (default: 0)
+    //   "subValue":    5,          // $ value per subscription (default: 5)
+    //   "goals": [
+    //     { "label": "Play Horror Game", "threshold": 200 },
+    //     { "label": "Dye Hair",         "threshold": 500 }
+    //   ]
+    // }
+    //
+    // goalTarget is derived automatically from the highest threshold.
+    //
+    // Generate the base64 string in your browser console:
+    //   btoa(JSON.stringify({ token: "...", startAmount: 385, subValue: 5, goals: [...] }))
 
-    // Persist across reloads — seed with 385 to match screenshot default
-    let currentAmount = parseFloat(localStorage.getItem('goalAmount') || 385);
+    const DEFAULTS = {
+        token:       '',
+        startAmount: 0,
+        subValue:    5,
+        goals:       [],
+    };
+
+    function loadConfig() {
+        const raw = new URLSearchParams(window.location.search).get('config');
+        if (!raw) return DEFAULTS;
+        try {
+            return { ...DEFAULTS, ...JSON.parse(atob(raw)) };
+        } catch (e) {
+            console.error('Invalid config param:', e);
+            return DEFAULTS;
+        }
+    }
+
+    const cfg        = loadConfig();
+    const GOAL_TARGET = cfg.goals.length
+        ? Math.max(...cfg.goals.map(g => g.threshold))
+        : 0;
+
+    // Persist amount across reloads, seeded with startAmount on first visit
+    let currentAmount = parseFloat(localStorage.getItem('goalAmount') ?? cfg.startAmount);
+
+    // ── RENDER GOALS ───────────────────────────────────────────
+    const widget   = document.getElementById('widget');
+    const bottomBar = widget.querySelector('.bottom-bar');
+
+    cfg.goals.forEach((goal, i) => {
+        const row = document.createElement('div');
+        row.className = 'goal-row';
+        row.dataset.threshold = goal.threshold;
+        row.style.animationDelay = (i * 0.07) + 's';
+        row.innerHTML = `
+            <div class="radio"><div class="radio-inner"></div></div>
+            <span class="goal-label">${goal.label}</span>
+            <span class="goal-amount">$${goal.threshold}</span>
+            <div class="thank-you"></div>
+        `;
+        widget.insertBefore(row, bottomBar);
+    });
 
     // ── UPDATE UI ──────────────────────────────────────────────
     function updateWidget() {
         localStorage.setItem('goalAmount', currentAmount);
 
-        // Progress bar
-        const pct = Math.min((currentAmount / GOAL_TARGET) * 100, 100);
+        const pct = GOAL_TARGET ? Math.min((currentAmount / GOAL_TARGET) * 100, 100) : 0;
         document.getElementById('progress-fill').style.width = pct + '%';
         document.getElementById('bottom-amount').textContent =
             '$' + Math.floor(currentAmount) + ' / ' + GOAL_TARGET;
 
-        // Tick completed goals & find most-recently unlocked
         let latestDone = null;
         document.querySelectorAll('.goal-row').forEach(row => {
             const threshold = parseFloat(row.dataset.threshold);
@@ -280,28 +292,29 @@
             }
         });
 
-        // Show "Thank You!" on the most-recently unlocked goal
         if (latestDone) latestDone.bubble.classList.add('visible');
     }
 
     updateWidget();
 
     // ── STREAMLABS SOCKET ──────────────────────────────────────
-    const streamlabs = io(`https://sockets.streamlabs.com?token=${TOKEN}`, { transports: ['websocket'] });
+    if (cfg.token) {
+        const streamlabs = io(`https://sockets.streamlabs.com?token=${cfg.token}`, { transports: ['websocket'] });
 
-    streamlabs.on('event', (eventData) => {
-        if (eventData.type === 'donation') {
-            eventData.message.forEach(msg => {
-                currentAmount += parseFloat(msg.amount);
-            });
-        }
-        if (eventData.for === 'twitch_account' || eventData.for === 'youtube_account') {
-            if (eventData.type === 'subscription' || eventData.type === 'resub') {
-                eventData.message.forEach(() => { currentAmount += SUB_VALUE; });
+        streamlabs.on('event', (eventData) => {
+            if (eventData.type === 'donation') {
+                eventData.message.forEach(msg => {
+                    currentAmount += parseFloat(msg.amount);
+                });
             }
-        }
-        updateWidget();
-    });
+            if (eventData.for === 'twitch_account' || eventData.for === 'youtube_account') {
+                if (eventData.type === 'subscription' || eventData.type === 'resub') {
+                    eventData.message.forEach(() => { currentAmount += cfg.subValue; });
+                }
+            }
+            updateWidget();
+        });
+    }
 </script>
 </body>
 </html>

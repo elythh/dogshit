@@ -277,6 +277,34 @@
             text-align: right;
         }
 
+        /* Theme toggle */
+        .theme-toggle {
+            display: flex;
+            gap: 0;
+            background: rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 3px;
+        }
+
+        .btn-theme {
+            flex: 1;
+            padding: 7px 12px;
+            border-radius: 7px;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 800;
+            color: rgba(255,255,255,0.4);
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .btn-theme.active {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+        }
+
         .btn-add {
             align-self: flex-start;
             background: transparent;
@@ -461,6 +489,14 @@
                 <span class="range-value" id="borderRadiusValue">50 px</span>
             </div>
         </div>
+
+        <div class="field">
+            <label>Mode</label>
+            <div class="theme-toggle">
+                <button class="btn-theme active" id="btn-theme-dark"  data-theme="dark">🌙 Sombre</button>
+                <button class="btn-theme"        id="btn-theme-light" data-theme="light">☀️ Clair</button>
+            </div>
+        </div>
     </div>
 
     <!-- Goals -->
@@ -585,6 +621,17 @@
 
     $('btn-add').addEventListener('click', () => addGoal());
 
+    // ── Theme toggle ───────────────────────────────────────────
+    let currentTheme = 'dark';
+
+    document.querySelectorAll('.btn-theme').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentTheme = btn.dataset.theme;
+            document.querySelectorAll('.btn-theme').forEach(b => b.classList.toggle('active', b === btn));
+            generate();
+        });
+    });
+
     // ── Generate ───────────────────────────────────────────────
     function generate() {
         const accent = $('accentColor').value;
@@ -610,6 +657,7 @@
             barLabel:     $('barLabel').value.trim()     || 'Objectifs communautaires',
             currency:     $('currency').value.trim()     || 'BC',
             thankYouText: $('thankYouText').value.trim() || 'Merci !',
+            theme:        currentTheme,
             goals,
         };
 
@@ -709,6 +757,12 @@
         if (cfg.barLabel     !== undefined) $('barLabel').value     = cfg.barLabel;
         if (cfg.currency     !== undefined) $('currency').value     = cfg.currency;
         if (cfg.thankYouText !== undefined) $('thankYouText').value = cfg.thankYouText;
+        if (cfg.theme !== undefined) {
+            currentTheme = cfg.theme;
+            document.querySelectorAll('.btn-theme').forEach(b => {
+                b.classList.toggle('active', b.dataset.theme === cfg.theme);
+            });
+        }
 
         if (Array.isArray(cfg.goals)) {
             $('goals-list').innerHTML = '';

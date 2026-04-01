@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: transparent;
+            overflow: hidden;
+            padding: 16px;
+            width: 480px;
+        }
+
+        .widget {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* ── Goal Row ── */
+        .goal-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255,255,255,0.07);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 50px;
+            padding: 10px 20px 10px 14px;
+            animation: fadeSlideIn 0.4s ease both;
+            position: relative;
+            overflow: visible;
+        }
+
+        .goal-row:nth-child(1) { animation-delay: 0.00s; }
+        .goal-row:nth-child(2) { animation-delay: 0.07s; }
+        .goal-row:nth-child(3) { animation-delay: 0.14s; }
+        .goal-row:nth-child(4) { animation-delay: 0.21s; }
+        .goal-row:nth-child(5) { animation-delay: 0.28s; }
+
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateX(-18px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        .goal-row.done {
+            background: rgba(255,255,255,0.10);
+        }
+
+        .goal-row.done .goal-label {
+            text-decoration: line-through;
+            opacity: 0.55;
+        }
+
+        /* Radio circle */
+        .radio {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 2.5px solid rgba(255,255,255,0.35);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .goal-row.done .radio {
+            border-color: #f6c90e;
+            background: rgba(246,201,14,0.13);
+        }
+
+        .radio-inner {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #f6c90e;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: scale(0.4);
+        }
+
+        .goal-row.done .radio-inner {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Label */
+        .goal-label {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Amount badge */
+        .goal-amount {
+            font-size: 15px;
+            font-weight: 800;
+            color: #fff;
+            opacity: 0.9;
+            white-space: nowrap;
+        }
+
+        /* Thank You bubble */
+        .thank-you {
+            position: absolute;
+            right: 70px;
+            top: -22px;
+            background: white;
+            color: #333;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 12px;
+            white-space: nowrap;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(4px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .thank-you::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-bottom: none;
+            border-top-color: white;
+        }
+
+        .thank-you.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── Bottom Bar ── */
+        .bottom-bar {
+            display: flex;
+            align-items: center;
+            background: linear-gradient(90deg, #f6c90e, #f0a500);
+            border-radius: 50px;
+            padding: 10px 8px 10px 16px;
+            gap: 12px;
+            animation: fadeSlideIn 0.4s ease 0.35s both;
+            margin-top: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bottom-icon {
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        .bottom-label {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 900;
+            color: #2d1a00;
+            letter-spacing: 0.02em;
+        }
+
+        .bottom-amount {
+            background: rgba(0,0,0,0.18);
+            border-radius: 50px;
+            padding: 6px 18px;
+            font-size: 16px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 0.02em;
+        }
+
+        /* Thin progress line at bottom of bar */
+        .progress-wrap {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 4px;
+            background: rgba(0,0,0,0.15);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: rgba(255,255,255,0.45);
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body>
+<div class="widget">
+
+    <!-- ── Goals — edit labels & thresholds as needed ── -->
+    <div class="goal-row" data-threshold="200">
+        <div class="radio"><div class="radio-inner"></div></div>
+        <span class="goal-label">Play Horror Game (Lights Off)</span>
+        <span class="goal-amount">$200</span>
+        <div class="thank-you"></div>
+    </div>
+
+    <div class="goal-row" data-threshold="250">
+        <div class="radio"><div class="radio-inner"></div></div>
+        <span class="goal-label">Let Chat Write Tweet</span>
+        <span class="goal-amount">$250</span>
+        <div class="thank-you"></div>
+    </div>
+
+    <div class="goal-row" data-threshold="300">
+        <div class="radio"><div class="radio-inner"></div></div>
+        <span class="goal-label">Read Old Tumblr Account</span>
+        <span class="goal-amount">$300</span>
+        <div class="thank-you"></div>
+    </div>
+
+    <div class="goal-row" data-threshold="500">
+        <div class="radio"><div class="radio-inner"></div></div>
+        <span class="goal-label">Dye Hair</span>
+        <span class="goal-amount">$500</span>
+        <div class="thank-you"></div>
+    </div>
+
+    <div class="goal-row" data-threshold="600">
+        <div class="radio"><div class="radio-inner"></div></div>
+        <span class="goal-label">Cursed Eating Challenge</span>
+        <span class="goal-amount">$600</span>
+        <div class="thank-you"></div>
+    </div>
+
+    <!-- ── Bottom progress bar ── -->
+    <div class="bottom-bar">
+        <span class="bottom-icon">🏆</span>
+        <span class="bottom-label">Community Goals</span>
+        <span class="bottom-amount" id="bottom-amount">$0 / 600</span>
+        <div class="progress-wrap">
+            <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ── CONFIGURATION ──────────────────────────────────────────
+    const TOKEN       = 'REDACTED';
+    const GOAL_TARGET = 600;
+    const SUB_VALUE   = 5;
+
+    // Persist across reloads — seed with 385 to match screenshot default
+    let currentAmount = parseFloat(localStorage.getItem('goalAmount') || 385);
+
+    // ── UPDATE UI ──────────────────────────────────────────────
+    function updateWidget() {
+        localStorage.setItem('goalAmount', currentAmount);
+
+        // Progress bar
+        const pct = Math.min((currentAmount / GOAL_TARGET) * 100, 100);
+        document.getElementById('progress-fill').style.width = pct + '%';
+        document.getElementById('bottom-amount').textContent =
+            '$' + Math.floor(currentAmount) + ' / ' + GOAL_TARGET;
+
+        // Tick completed goals & find most-recently unlocked
+        let latestDone = null;
+        document.querySelectorAll('.goal-row').forEach(row => {
+            const threshold = parseFloat(row.dataset.threshold);
+            const bubble    = row.querySelector('.thank-you');
+            bubble.classList.remove('visible');
+
+            if (currentAmount >= threshold) {
+                row.classList.add('done');
+                latestDone = { row, bubble };
+            } else {
+                row.classList.remove('done');
+            }
+        });
+
+        // Show "Thank You!" on the most-recently unlocked goal
+        if (latestDone) latestDone.bubble.classList.add('visible');
+    }
+
+    updateWidget();
+
+    // ── STREAMLABS SOCKET ──────────────────────────────────────
+    const streamlabs = io(`https://sockets.streamlabs.com?token=${TOKEN}`, { transports: ['websocket'] });
+
+    streamlabs.on('event', (eventData) => {
+        if (eventData.type === 'donation') {
+            eventData.message.forEach(msg => {
+                currentAmount += parseFloat(msg.amount);
+            });
+        }
+        if (eventData.for === 'twitch_account' || eventData.for === 'youtube_account') {
+            if (eventData.type === 'subscription' || eventData.type === 'resub') {
+                eventData.message.forEach(() => { currentAmount += SUB_VALUE; });
+            }
+        }
+        updateWidget();
+    });
+</script>
+</body>
+</html>

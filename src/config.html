@@ -250,24 +250,24 @@
 <body>
 <div class="page">
 
-    <h1>🏆 Widget <span>Configurator</span></h1>
+    <h1>🏆 Widget <span>Configurateur</span></h1>
 
     <!-- Settings -->
     <div class="card">
-        <div class="card-title">Settings</div>
+        <div class="card-title">Paramètres</div>
 
         <div class="field">
             <label for="token">Streamlabs Socket Token</label>
-            <input type="text" id="token" placeholder="Paste your token here…">
+            <input type="text" id="token" placeholder="Collez votre token ici…">
         </div>
 
         <div class="row">
             <div class="field">
-                <label for="startAmount">Start Amount (BC)</label>
+                <label for="startAmount">Montant de départ (BC)</label>
                 <input type="number" id="startAmount" placeholder="0" min="0" value="0">
             </div>
             <div class="field">
-                <label for="subValue">Sub Value (BC)</label>
+                <label for="subValue">Valeur d'un sub (BC)</label>
                 <input type="number" id="subValue" placeholder="5" min="0" value="5">
             </div>
         </div>
@@ -275,19 +275,19 @@
 
     <!-- Goals -->
     <div class="card">
-        <div class="card-title">Goals</div>
+        <div class="card-title">Objectifs</div>
 
         <div id="goals-list"></div>
 
-        <button class="btn-add" id="btn-add">+ Add goal</button>
+        <button class="btn-add" id="btn-add">+ Ajouter un objectif</button>
     </div>
 
     <!-- Output -->
     <div class="card">
-        <div class="card-title">Output</div>
+        <div class="card-title">Résultat</div>
 
         <div class="output-box">
-            <div class="output-label">Base64 config string</div>
+            <div class="output-label">Chaîne de config en base64</div>
             <textarea id="output" readonly></textarea>
         </div>
 
@@ -311,7 +311,7 @@
         const item = document.createElement('div');
         item.className = 'goal-item';
         item.innerHTML = `
-            <input type="text"   placeholder="Goal label…" value="${label}">
+            <input type="text"   placeholder="Intitulé de l'objectif…" value="${label}">
             <input type="number" placeholder="BC" min="0" value="${threshold}">
             <button class="btn-remove" title="Remove">×</button>
         `;

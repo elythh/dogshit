@@ -196,8 +196,8 @@
 
     <div class="bottom-bar">
         <span class="bottom-icon">🏆</span>
-        <span class="bottom-label">Community Goals</span>
-        <span class="bottom-amount" id="bottom-amount">BC0 / 0</span>
+        <span class="bottom-label">Objectifs communautaires</span>
+        <span class="bottom-amount" id="bottom-amount">BC 0 / 0</span>
         <div class="progress-wrap">
             <div class="progress-fill" id="progress-fill" style="width:0%"></div>
         </div>
@@ -262,7 +262,7 @@
         row.innerHTML = `
             <div class="radio"><div class="radio-inner"></div></div>
             <span class="goal-label">${goal.label}</span>
-            <span class="goal-amount">BC${goal.threshold}</span>
+            <span class="goal-amount">BC ${goal.threshold}</span>
             <div class="thank-you"></div>
         `;
         widget.insertBefore(row, bottomBar);
@@ -275,7 +275,7 @@
         const pct = GOAL_TARGET ? Math.min((currentAmount / GOAL_TARGET) * 100, 100) : 0;
         document.getElementById('progress-fill').style.width = pct + '%';
         document.getElementById('bottom-amount').textContent =
-            'BC' + Math.floor(currentAmount) + ' / ' + GOAL_TARGET;
+            'BC ' + Math.floor(currentAmount) + ' / ' + GOAL_TARGET;
 
         let latestDone = null;
         document.querySelectorAll('.goal-row').forEach(row => {

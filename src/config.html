@@ -567,7 +567,7 @@
             goals,
         };
 
-        const b64 = btoa(JSON.stringify(cfg));
+        const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(cfg))));
         $('output').value        = b64;
         $('url-full').textContent = b64;
         $('url-bar').textContent  = b64;
@@ -582,14 +582,34 @@
     generate();
 
     // ── Copy URL buttons ───────────────────────────────────────
+    function copyText(text) {
+        if (navigator.clipboard?.writeText) {
+            return navigator.clipboard.writeText(text);
+        }
+        // Fallback for HTTP / restricted contexts
+        const tmp = document.createElement('textarea');
+        tmp.value = text;
+        tmp.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand('copy');
+        document.body.removeChild(tmp);
+        return Promise.resolve();
+    }
+
     function makeCopyUrl(btnId, getUrl) {
-        $(btnId).addEventListener('click', () => {
-            navigator.clipboard.writeText(getUrl());
+        $(btnId).addEventListener('click', async () => {
             const btn = $(btnId);
             const orig = btn.textContent;
-            btn.textContent = '✓';
-            btn.classList.add('copied');
-            setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
+            try {
+                await copyText(getUrl());
+                btn.textContent = '✓';
+                btn.classList.add('copied');
+                setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
+            } catch {
+                btn.textContent = 'Erreur';
+                setTimeout(() => { btn.textContent = orig; }, 2000);
+            }
         });
     }
 
@@ -602,7 +622,7 @@
         $('import-error').textContent = '';
         let cfg;
         try {
-            cfg = JSON.parse(atob(raw));
+            cfg = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(raw), c => c.charCodeAt(0))));
         } catch {
             $('import-error').textContent = 'Chaîne invalide.';
             return;

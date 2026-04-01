@@ -246,7 +246,7 @@
         const raw = new URLSearchParams(window.location.search).get('config');
         if (!raw) return DEFAULTS;
         try {
-            return { ...DEFAULTS, ...JSON.parse(atob(raw)) };
+            return { ...DEFAULTS, ...JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(raw), c => c.charCodeAt(0)))) };
         } catch (e) {
             console.error('Invalid config param:', e);
             return DEFAULTS;

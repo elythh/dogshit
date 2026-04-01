@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --accent: #f6c90e;
+            --radius: 50px;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: transparent;
+            overflow: hidden;
+            padding: 16px;
+            width: 480px;
+        }
+
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateX(-18px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        .bottom-bar {
+            display: flex;
+            align-items: center;
+            background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 85%, #000));
+            border-radius: var(--radius);
+            padding: 10px 8px 10px 16px;
+            gap: 12px;
+            animation: fadeSlideIn 0.4s ease both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bottom-icon {
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        .bottom-label {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 900;
+            color: #2d1a00;
+            letter-spacing: 0.02em;
+        }
+
+        .bottom-amount {
+            background: rgba(0,0,0,0.18);
+            border-radius: var(--radius);
+            padding: 6px 18px;
+            font-size: 16px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 0.02em;
+        }
+
+        .progress-wrap {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 4px;
+            background: rgba(0,0,0,0.15);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: rgba(255,255,255,0.45);
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body>
+<div class="bottom-bar">
+    <span class="bottom-icon" id="bottom-icon">🏆</span>
+    <span class="bottom-label" id="bottom-label">Objectifs communautaires</span>
+    <span class="bottom-amount" id="bottom-amount">BC 0 / 0</span>
+    <div class="progress-wrap">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+</div>
+
+<script>
+    const DEFAULTS = {
+        token:        '',
+        startAmount:  0,
+        subValue:     5,
+        accentColor:  '#f6c90e',
+        borderRadius: 50,
+        barIcon:      '🏆',
+        barLabel:     'Objectifs communautaires',
+        currency:     'BC',
+        goals:        [],
+    };
+
+    function loadConfig() {
+        const raw = new URLSearchParams(window.location.search).get('config');
+        if (!raw) return DEFAULTS;
+        try {
+            return { ...DEFAULTS, ...JSON.parse(atob(raw)) };
+        } catch (e) {
+            console.error('Invalid config param:', e);
+            return DEFAULTS;
+        }
+    }
+
+    const cfg = loadConfig();
+
+    document.documentElement.style.setProperty('--accent', cfg.accentColor);
+    document.documentElement.style.setProperty('--radius', cfg.borderRadius + 'px');
+    document.getElementById('bottom-icon').textContent  = cfg.barIcon;
+    document.getElementById('bottom-label').textContent = cfg.barLabel;
+
+    const GOAL_TARGET = cfg.goals.length
+        ? Math.max(...cfg.goals.map(g => g.threshold))
+        : 0;
+
+    let currentAmount = parseFloat(localStorage.getItem('goalAmount') ?? cfg.startAmount);
+
+    function updateWidget() {
+        localStorage.setItem('goalAmount', currentAmount);
+
+        const pct = GOAL_TARGET ? Math.min((currentAmount / GOAL_TARGET) * 100, 100) : 0;
+        document.getElementById('progress-fill').style.width = pct + '%';
+        document.getElementById('bottom-amount').textContent =
+            cfg.currency + ' ' + Math.floor(currentAmount) + ' / ' + GOAL_TARGET;
+    }
+
+    updateWidget();
+
+    if (cfg.token) {
+        const streamlabs = io(`https://sockets.streamlabs.com?token=${cfg.token}`, { transports: ['websocket'] });
+
+        streamlabs.on('event', (eventData) => {
+            if (eventData.type === 'donation') {
+                eventData.message.forEach(msg => {
+                    currentAmount += parseFloat(msg.amount);
+                });
+            }
+            if (eventData.for === 'twitch_account' || eventData.for === 'youtube_account') {
+                if (eventData.type === 'subscription' || eventData.type === 'resub') {
+                    eventData.message.forEach(() => { currentAmount += cfg.subValue; });
+                }
+            }
+            updateWidget();
+        });
+    }
+</script>
+</body>
+</html>

@@ -241,10 +241,82 @@
             color: #f6c90e;
         }
 
+        /* Import */
+        .import-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .import-row input {
+            flex: 1;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .import-row input:focus { border-color: #f6c90e; }
+        .import-row input::placeholder { color: rgba(255,255,255,0.2); }
+
+        .btn-import {
+            padding: 10px 18px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 800;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-import:hover { background: rgba(255,255,255,0.18); }
+
+        .import-error {
+            font-size: 12px;
+            font-weight: 700;
+            color: #ff6b6b;
+            min-height: 16px;
+        }
+
         /* Output */
         .output-box {
             position: relative;
         }
+
+        .url-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .url-row > div { flex: 1; min-width: 0; }
+
+        .btn-copy-url {
+            padding: 8px 16px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 800;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .btn-copy-url:hover { background: rgba(255,255,255,0.18); }
+        .btn-copy-url.copied { background: rgba(76,175,125,0.3); color: #4caf7d; }
 
         .output-label {
             font-size: 11px;
@@ -309,6 +381,19 @@
 
     <h1>🏆 Widget <span>Configurateur</span></h1>
 
+    <!-- Importer -->
+    <div class="card">
+        <div class="card-title">Importer une config</div>
+        <div class="field">
+            <label>Coller une chaîne base64 existante</label>
+            <div class="import-row">
+                <input type="text" id="import-input" placeholder="Coller ici…">
+                <button class="btn-import" id="btn-import">Importer</button>
+            </div>
+            <span class="import-error" id="import-error"></span>
+        </div>
+    </div>
+
     <!-- Settings -->
     <div class="card">
         <div class="card-title">Paramètres</div>
@@ -329,6 +414,33 @@
             <div class="field">
                 <label for="subValue">Valeur d'un sub (BC)</label>
                 <input type="number" id="subValue" placeholder="5" min="0" value="5">
+            </div>
+        </div>
+    </div>
+
+    <!-- Textes -->
+    <div class="card">
+        <div class="card-title">Textes</div>
+
+        <div class="row">
+            <div class="field" style="flex:0 0 72px">
+                <label for="barIcon">Icône</label>
+                <input type="text" id="barIcon" value="🏆" maxlength="4">
+            </div>
+            <div class="field">
+                <label for="barLabel">Titre de la barre</label>
+                <input type="text" id="barLabel" value="Objectifs communautaires">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="field" style="flex:0 0 100px">
+                <label for="currency">Monnaie</label>
+                <input type="text" id="currency" value="BC" maxlength="8">
+            </div>
+            <div class="field">
+                <label for="thankYouText">Bulle "merci"</label>
+                <input type="text" id="thankYouText" value="Merci !" placeholder="Merci !">
             </div>
         </div>
     </div>
@@ -372,14 +484,21 @@
             <textarea id="output" readonly></textarea>
         </div>
 
-        <div class="output-box">
-            <div class="output-label">URL source navigateur OBS</div>
-            <div class="url-preview" id="url-preview">
-                https://twitch.elyth.xyz/<span>?config=</span><span id="url-suffix">…</span>
+        <div class="output-box url-row">
+            <div>
+                <div class="output-label">Widget complet (objectifs + barre)</div>
+                <div class="url-preview">https://twitch.elyth.xyz/<span>?config=</span><span id="url-full">…</span></div>
             </div>
+            <button class="btn-copy-url" id="btn-copy-full">Copier</button>
         </div>
 
-        <button class="btn-copy" id="btn-copy">Copier la chaîne base64</button>
+        <div class="output-box url-row">
+            <div>
+                <div class="output-label">Barre seulement</div>
+                <div class="url-preview">https://twitch.elyth.xyz/bar<span>?config=</span><span id="url-bar">…</span></div>
+            </div>
+            <button class="btn-copy-url" id="btn-copy-bar">Copier</button>
+        </div>
     </div>
 
 </div>
@@ -441,31 +560,71 @@
             subValue:     Number($('subValue').value) || 5,
             accentColor:  accent,
             borderRadius: radius,
+            barIcon:      $('barIcon').value.trim()      || '🏆',
+            barLabel:     $('barLabel').value.trim()     || 'Objectifs communautaires',
+            currency:     $('currency').value.trim()     || 'BC',
+            thankYouText: $('thankYouText').value.trim() || 'Merci !',
             goals,
         };
 
         const b64 = btoa(JSON.stringify(cfg));
-        $('output').value           = b64;
-        $('url-suffix').textContent = b64;
+        $('output').value        = b64;
+        $('url-full').textContent = b64;
+        $('url-bar').textContent  = b64;
     }
 
     // Wire up settings inputs
-    ['token', 'startAmount', 'subValue', 'accentColor', 'borderRadius'].forEach(id => {
+    ['token', 'startAmount', 'subValue', 'accentColor', 'borderRadius',
+     'barIcon', 'barLabel', 'currency', 'thankYouText'].forEach(id => {
         $(id).addEventListener('input', generate);
     });
 
     generate();
 
-    // ── Copy ───────────────────────────────────────────────────
-    $('btn-copy').addEventListener('click', () => {
-        navigator.clipboard.writeText($('output').value);
-        const btn = $('btn-copy');
-        btn.textContent = '✓ Copié !';
-        btn.classList.add('copied');
-        setTimeout(() => {
-            btn.textContent = 'Copier la chaîne base64';
-            btn.classList.remove('copied');
-        }, 2000);
+    // ── Copy URL buttons ───────────────────────────────────────
+    function makeCopyUrl(btnId, getUrl) {
+        $(btnId).addEventListener('click', () => {
+            navigator.clipboard.writeText(getUrl());
+            const btn = $(btnId);
+            const orig = btn.textContent;
+            btn.textContent = '✓';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
+        });
+    }
+
+    makeCopyUrl('btn-copy-full', () => 'https://twitch.elyth.xyz/?config=' + $('output').value);
+    makeCopyUrl('btn-copy-bar',  () => 'https://twitch.elyth.xyz/bar?config=' + $('output').value);
+
+    // ── Import ─────────────────────────────────────────────────
+    $('btn-import').addEventListener('click', () => {
+        const raw = $('import-input').value.trim();
+        $('import-error').textContent = '';
+        let cfg;
+        try {
+            cfg = JSON.parse(atob(raw));
+        } catch {
+            $('import-error').textContent = 'Chaîne invalide.';
+            return;
+        }
+
+        if (cfg.token        !== undefined) $('token').value        = cfg.token;
+        if (cfg.startAmount  !== undefined) $('startAmount').value  = cfg.startAmount;
+        if (cfg.subValue     !== undefined) $('subValue').value     = cfg.subValue;
+        if (cfg.accentColor  !== undefined) $('accentColor').value  = cfg.accentColor;
+        if (cfg.borderRadius !== undefined) $('borderRadius').value = cfg.borderRadius;
+        if (cfg.barIcon      !== undefined) $('barIcon').value      = cfg.barIcon;
+        if (cfg.barLabel     !== undefined) $('barLabel').value     = cfg.barLabel;
+        if (cfg.currency     !== undefined) $('currency').value     = cfg.currency;
+        if (cfg.thankYouText !== undefined) $('thankYouText').value = cfg.thankYouText;
+
+        if (Array.isArray(cfg.goals)) {
+            $('goals-list').innerHTML = '';
+            cfg.goals.forEach(g => addGoal(g.label, g.threshold));
+        }
+
+        $('import-input').value = '';
+        generate();
     });
 </script>
 </body>

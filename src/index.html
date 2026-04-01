@@ -7,6 +7,11 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        :root {
+            --accent: #f6c90e;
+            --radius: 50px;
+        }
+
         body {
             font-family: 'Nunito', sans-serif;
             background: transparent;
@@ -29,7 +34,7 @@
             background: rgba(255,255,255,0.07);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 50px;
+            border-radius: var(--radius);
             padding: 10px 20px 10px 14px;
             animation: fadeSlideIn 0.4s ease both;
             position: relative;
@@ -63,15 +68,15 @@
         }
 
         .goal-row.done .radio {
-            border-color: #f6c90e;
-            background: rgba(246,201,14,0.13);
+            border-color: var(--accent);
+            background: color-mix(in srgb, var(--accent) 13%, transparent);
         }
 
         .radio-inner {
             width: 12px;
             height: 12px;
             border-radius: 50%;
-            background: #f6c90e;
+            background: var(--accent);
             opacity: 0;
             transition: opacity 0.3s, transform 0.3s;
             transform: scale(0.4);
@@ -142,8 +147,8 @@
         .bottom-bar {
             display: flex;
             align-items: center;
-            background: linear-gradient(90deg, #f6c90e, #f0a500);
-            border-radius: 50px;
+            background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 85%, #000));
+            border-radius: var(--radius);
             padding: 10px 8px 10px 16px;
             gap: 12px;
             animation: fadeSlideIn 0.4s ease 0.35s both;
@@ -167,7 +172,7 @@
 
         .bottom-amount {
             background: rgba(0,0,0,0.18);
-            border-radius: 50px;
+            border-radius: var(--radius);
             padding: 6px 18px;
             font-size: 16px;
             font-weight: 900;
@@ -225,10 +230,12 @@
     // Generate the base64 string at https://twitch.elyth.xyz/config
 
     const DEFAULTS = {
-        token:       '',
-        startAmount: 0,
-        subValue:    5,
-        goals:       [],
+        token:        '',
+        startAmount:  0,
+        subValue:     5,
+        accentColor:  '#f6c90e',
+        borderRadius: 50,
+        goals:        [],
     };
 
     function loadConfig() {
@@ -243,6 +250,10 @@
     }
 
     const cfg        = loadConfig();
+
+    document.documentElement.style.setProperty('--accent', cfg.accentColor);
+    document.documentElement.style.setProperty('--radius', cfg.borderRadius + 'px');
+
     const GOAL_TARGET = cfg.goals.length
         ? Math.max(...cfg.goals.map(g => g.threshold))
         : 0;

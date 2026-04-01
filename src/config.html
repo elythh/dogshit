@@ -64,6 +64,16 @@
             color: rgba(255,255,255,0.7);
         }
 
+        .field label a {
+            color: #f6c90e;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .field label a:hover {
+            text-decoration: underline;
+        }
+
         .field input {
             background: rgba(255,255,255,0.07);
             border: 1px solid rgba(255,255,255,0.12);
@@ -165,6 +175,53 @@
             border-color: rgba(255,80,80,0.3);
         }
 
+        /* ── Theme controls ── */
+        .color-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        input[type="color"] {
+            width: 48px;
+            height: 38px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: none;
+            cursor: pointer;
+            padding: 2px;
+            flex-shrink: 0;
+        }
+
+        .color-hex {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .range-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            cursor: pointer;
+            accent-color: #f6c90e;
+        }
+
+        .range-value {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.5);
+            min-width: 48px;
+            text-align: right;
+        }
+
         .btn-add {
             align-self: flex-start;
             background: transparent;
@@ -257,7 +314,10 @@
         <div class="card-title">Paramètres</div>
 
         <div class="field">
-            <label for="token">Streamlabs Socket Token</label>
+            <label for="token">
+                Streamlabs Socket Token —
+                <a href="https://streamlabs.com/dashboard#/settings/api-settings" target="_blank" rel="noopener">obtenir le token</a>
+            </label>
             <input type="text" id="token" placeholder="Collez votre token ici…">
         </div>
 
@@ -269,6 +329,27 @@
             <div class="field">
                 <label for="subValue">Valeur d'un sub (BC)</label>
                 <input type="number" id="subValue" placeholder="5" min="0" value="5">
+            </div>
+        </div>
+    </div>
+
+    <!-- Thème -->
+    <div class="card">
+        <div class="card-title">Thème</div>
+
+        <div class="field">
+            <label for="accentColor">Couleur d'accentuation</label>
+            <div class="color-row">
+                <input type="color" id="accentColor" value="#f6c90e">
+                <span class="color-hex" id="accentColorHex">#f6c90e</span>
+            </div>
+        </div>
+
+        <div class="field">
+            <label for="borderRadius">Rondeur des bordures</label>
+            <div class="range-row">
+                <input type="range" id="borderRadius" min="0" max="50" value="50">
+                <span class="range-value" id="borderRadiusValue">50 px</span>
             </div>
         </div>
     </div>
@@ -292,13 +373,13 @@
         </div>
 
         <div class="output-box">
-            <div class="output-label">OBS browser source URL</div>
+            <div class="output-label">URL source navigateur OBS</div>
             <div class="url-preview" id="url-preview">
                 https://twitch.elyth.xyz/<span>?config=</span><span id="url-suffix">…</span>
             </div>
         </div>
 
-        <button class="btn-copy" id="btn-copy">Copy base64 string</button>
+        <button class="btn-copy" id="btn-copy">Copier la chaîne base64</button>
     </div>
 
 </div>
@@ -341,25 +422,35 @@
 
     // ── Generate ───────────────────────────────────────────────
     function generate() {
+        const accent = $('accentColor').value;
+        const radius = Number($('borderRadius').value);
+
+        // Update live displays
+        $('accentColorHex').textContent     = accent;
+        $('borderRadiusValue').textContent  = radius + ' px';
+        $('borderRadius').style.accentColor = accent;
+
         const goals = [...$('goals-list').querySelectorAll('.goal-item')].map(item => {
             const [labelEl, thresholdEl] = item.querySelectorAll('input');
             return { label: labelEl.value.trim(), threshold: Number(thresholdEl.value) || 0 };
         }).filter(g => g.label);
 
         const cfg = {
-            token:       $('token').value.trim(),
-            startAmount: Number($('startAmount').value) || 0,
-            subValue:    Number($('subValue').value) || 5,
+            token:        $('token').value.trim(),
+            startAmount:  Number($('startAmount').value) || 0,
+            subValue:     Number($('subValue').value) || 5,
+            accentColor:  accent,
+            borderRadius: radius,
             goals,
         };
 
         const b64 = btoa(JSON.stringify(cfg));
-        $('output').value     = b64;
+        $('output').value           = b64;
         $('url-suffix').textContent = b64;
     }
 
     // Wire up settings inputs
-    ['token', 'startAmount', 'subValue'].forEach(id => {
+    ['token', 'startAmount', 'subValue', 'accentColor', 'borderRadius'].forEach(id => {
         $(id).addEventListener('input', generate);
     });
 
@@ -369,10 +460,10 @@
     $('btn-copy').addEventListener('click', () => {
         navigator.clipboard.writeText($('output').value);
         const btn = $('btn-copy');
-        btn.textContent = '✓ Copied!';
+        btn.textContent = '✓ Copié !';
         btn.classList.add('copied');
         setTimeout(() => {
-            btn.textContent = 'Copy base64 string';
+            btn.textContent = 'Copier la chaîne base64';
             btn.classList.remove('copied');
         }, 2000);
     });

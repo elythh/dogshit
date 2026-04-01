@@ -212,6 +212,22 @@
             border-top-color: #1a1a1a;
         }
 
+        /* ── Confetti ── */
+        .confetti-piece {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            pointer-events: none;
+            border-radius: 2px;
+            animation: confettiFall linear forwards;
+        }
+
+        @keyframes confettiFall {
+            0%   { transform: translateY(0)    rotate(0deg)   scaleX(1); opacity: 1; }
+            80%  { opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg) scaleX(0.4); opacity: 0; }
+        }
+
         /* Thin progress line at bottom of bar */
         .progress-wrap {
             position: absolute;
@@ -323,13 +339,10 @@
     const widget   = document.getElementById('widget');
     const bottomBar = widget.querySelector('.bottom-bar');
 
-    const goalAudios = JSON.parse(localStorage.getItem('goalAudios') || '{}');
-
     cfg.goals.forEach((goal, i) => {
         const row = document.createElement('div');
         row.className = 'goal-row';
         row.dataset.threshold = goal.threshold;
-        row.dataset.index     = i;
         row.style.animationDelay = (i * 0.07) + 's';
         row.innerHTML = `
             <div class="radio"><div class="radio-inner"></div></div>
@@ -365,8 +378,7 @@
                     bubble._hideTimer = setTimeout(() => {
                         bubble.classList.remove('visible');
                     }, 10000);
-                    const audioSrc = goalAudios[row.dataset.index];
-                    if (audioSrc) new Audio(audioSrc).play().catch(() => {});
+                    launchConfetti(row);
                 }
             } else {
                 row.classList.remove('done');
@@ -375,6 +387,46 @@
     }
 
     updateWidget();
+
+    // ── CONFETTI ───────────────────────────────────────────────
+    const COLORS = [
+        cfg.accentColor, '#fff', '#ff6b9d', '#6bcbff', '#a8ff78', '#ffb347', '#c77dff'
+    ];
+
+    function launchConfetti(originEl) {
+        const rect   = originEl.getBoundingClientRect();
+        const cx     = rect.left + rect.width  / 2;
+        const cy     = rect.top  + rect.height / 2;
+        const count  = 80;
+
+        for (let i = 0; i < count; i++) {
+            const el = document.createElement('div');
+            el.className = 'confetti-piece';
+
+            const color  = COLORS[Math.floor(Math.random() * COLORS.length)];
+            const size   = 6 + Math.random() * 8;
+            const angle  = (Math.random() * 360) * (Math.PI / 180);
+            const spread = 80 + Math.random() * 160;
+            const tx     = Math.cos(angle) * spread;
+            const ty     = Math.sin(angle) * spread - 80; // bias upward
+            const dur    = 1.8 + Math.random() * 1.4;
+            const delay  = Math.random() * 0.3;
+            const shape  = Math.random() > 0.5 ? '50%' : '2px';
+
+            el.style.cssText = `
+                left: ${cx + tx}px;
+                top:  ${cy + ty}px;
+                width: ${size}px;
+                height: ${size * (0.4 + Math.random() * 0.8)}px;
+                background: ${color};
+                border-radius: ${shape};
+                animation-duration: ${dur}s;
+                animation-delay: ${delay}s;
+            `;
+            document.body.appendChild(el);
+            el.addEventListener('animationend', () => el.remove());
+        }
+    }
 
     // ── STREAMLABS SOCKET ──────────────────────────────────────
     if (cfg.token) {

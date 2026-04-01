@@ -499,6 +499,22 @@
             </div>
             <button class="btn-copy-url" id="btn-copy-bar">Copier</button>
         </div>
+
+        <div class="output-box url-row" style="margin-top:4px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.07)">
+            <div>
+                <div class="output-label" style="color:#ff6b6b">Réinitialiser à zéro — Widget complet</div>
+                <div class="url-preview">https://twitch.elyth.xyz/<span>?reset&config=</span><span id="url-reset-full">…</span></div>
+            </div>
+            <button class="btn-copy-url" id="btn-copy-reset-full">Copier</button>
+        </div>
+
+        <div class="output-box url-row">
+            <div>
+                <div class="output-label" style="color:#ff6b6b">Réinitialiser à zéro — Barre seulement</div>
+                <div class="url-preview">https://twitch.elyth.xyz/bar<span>?reset&config=</span><span id="url-reset-bar">…</span></div>
+            </div>
+            <button class="btn-copy-url" id="btn-copy-reset-bar">Copier</button>
+        </div>
     </div>
 
 </div>
@@ -568,9 +584,11 @@
         };
 
         const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(cfg))));
-        $('output').value        = b64;
-        $('url-full').textContent = b64;
-        $('url-bar').textContent  = b64;
+        $('output').value             = b64;
+        $('url-full').textContent      = b64;
+        $('url-bar').textContent       = b64;
+        $('url-reset-full').textContent = b64;
+        $('url-reset-bar').textContent  = b64;
     }
 
     // Wire up settings inputs
@@ -613,8 +631,10 @@
         });
     }
 
-    makeCopyUrl('btn-copy-full', () => 'https://twitch.elyth.xyz/?config=' + $('output').value);
-    makeCopyUrl('btn-copy-bar',  () => 'https://twitch.elyth.xyz/bar?config=' + $('output').value);
+    makeCopyUrl('btn-copy-full',       () => 'https://twitch.elyth.xyz/?config='        + $('output').value);
+    makeCopyUrl('btn-copy-bar',        () => 'https://twitch.elyth.xyz/bar?config='     + $('output').value);
+    makeCopyUrl('btn-copy-reset-full', () => 'https://twitch.elyth.xyz/?reset&config='  + $('output').value);
+    makeCopyUrl('btn-copy-reset-bar',  () => 'https://twitch.elyth.xyz/bar?reset&config=' + $('output').value);
 
     // ── Import ─────────────────────────────────────────────────
     $('btn-import').addEventListener('click', () => {

@@ -110,6 +110,11 @@
 
     const cfg = loadConfig();
 
+    // ?reset efface le montant persisté et repart de startAmount
+    if (new URLSearchParams(window.location.search).has('reset')) {
+        localStorage.removeItem('goalAmount');
+    }
+
     document.documentElement.style.setProperty('--accent', cfg.accentColor);
     document.documentElement.style.setProperty('--radius', cfg.borderRadius + 'px');
     document.getElementById('bottom-icon').textContent  = cfg.barIcon;

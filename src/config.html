@@ -491,6 +491,30 @@
         </div>
 
         <div class="field">
+            <label for="fontSize">Taille du texte</label>
+            <div class="range-row">
+                <input type="range" id="fontSize" min="10" max="26" value="15">
+                <span class="range-value" id="fontSizeValue">15 px</span>
+            </div>
+        </div>
+
+        <div class="field">
+            <label for="widgetWidth">Largeur du widget</label>
+            <div class="range-row">
+                <input type="range" id="widgetWidth" min="280" max="800" value="480">
+                <span class="range-value" id="widgetWidthValue">480 px</span>
+            </div>
+        </div>
+
+        <div class="field">
+            <label for="rowGap">Espacement entre les lignes</label>
+            <div class="range-row">
+                <input type="range" id="rowGap" min="2" max="28" value="10">
+                <span class="range-value" id="rowGapValue">10 px</span>
+            </div>
+        </div>
+
+        <div class="field">
             <label>Mode</label>
             <div class="theme-toggle">
                 <button class="btn-theme active" id="btn-theme-dark"  data-theme="dark">🌙 Sombre</button>
@@ -636,11 +660,17 @@
     function generate() {
         const accent = $('accentColor').value;
         const radius = Number($('borderRadius').value);
+        const fontSize    = Number($('fontSize').value);
+        const widgetWidth = Number($('widgetWidth').value);
+        const rowGap      = Number($('rowGap').value);
 
         // Update live displays
         $('accentColorHex').textContent     = accent;
         $('borderRadiusValue').textContent  = radius + ' px';
         $('borderRadius').style.accentColor = accent;
+        $('fontSizeValue').textContent      = fontSize    + ' px';
+        $('widgetWidthValue').textContent   = widgetWidth + ' px';
+        $('rowGapValue').textContent        = rowGap      + ' px';
 
         const goals = [...$('goals-list').querySelectorAll('.goal-item')].map(item => {
             const [labelEl, thresholdEl] = item.querySelectorAll('input');
@@ -653,6 +683,9 @@
             subValue:     Number($('subValue').value) || 5,
             accentColor:  accent,
             borderRadius: radius,
+            fontSize,
+            widgetWidth,
+            rowGap,
             barIcon:      $('barIcon').value.trim()      || '🏆',
             barLabel:     $('barLabel').value.trim()     || 'Objectifs communautaires',
             currency:     $('currency').value.trim()     || 'BC',
@@ -674,6 +707,7 @@
 
     // Wire up settings inputs
     ['token', 'startAmount', 'subValue', 'accentColor', 'borderRadius',
+     'fontSize', 'widgetWidth', 'rowGap',
      'barIcon', 'barLabel', 'currency', 'thankYouText'].forEach(id => {
         $(id).addEventListener('input', generate);
     });
@@ -753,6 +787,9 @@
         if (cfg.subValue     !== undefined) $('subValue').value     = cfg.subValue;
         if (cfg.accentColor  !== undefined) $('accentColor').value  = cfg.accentColor;
         if (cfg.borderRadius !== undefined) $('borderRadius').value = cfg.borderRadius;
+        if (cfg.fontSize     !== undefined) $('fontSize').value     = cfg.fontSize;
+        if (cfg.widgetWidth  !== undefined) $('widgetWidth').value  = cfg.widgetWidth;
+        if (cfg.rowGap       !== undefined) $('rowGap').value       = cfg.rowGap;
         if (cfg.barIcon      !== undefined) $('barIcon').value      = cfg.barIcon;
         if (cfg.barLabel     !== undefined) $('barLabel').value     = cfg.barLabel;
         if (cfg.currency     !== undefined) $('currency').value     = cfg.currency;

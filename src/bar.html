@@ -10,6 +10,8 @@
         :root {
             --accent: #f6c90e;
             --radius: 50px;
+            --font-size: 15px;
+            --widget-width: 480px;
         }
 
         body {
@@ -17,7 +19,7 @@
             background: transparent;
             overflow: hidden;
             padding: 16px;
-            width: 480px;
+            width: var(--widget-width);
         }
 
         @keyframes fadeSlideIn {
@@ -44,7 +46,7 @@
 
         .bottom-label {
             flex: 1;
-            font-size: 15px;
+            font-size: var(--font-size);
             font-weight: 900;
             color: #2d1a00;
             letter-spacing: 0.02em;
@@ -54,7 +56,7 @@
             background: rgba(0,0,0,0.18);
             border-radius: var(--radius);
             padding: 6px 18px;
-            font-size: 16px;
+            font-size: var(--font-size);
             font-weight: 900;
             color: #fff;
             letter-spacing: 0.02em;
@@ -91,6 +93,8 @@
         subValue:     5,
         accentColor:  '#f6c90e',
         borderRadius: 50,
+        fontSize:     15,
+        widgetWidth:  480,
         barIcon:      '🏆',
         barLabel:     'Objectifs communautaires',
         currency:     'BC',
@@ -123,8 +127,10 @@
         localStorage.removeItem('goalAmount');
     }
 
-    document.documentElement.style.setProperty('--accent', cfg.accentColor);
-    document.documentElement.style.setProperty('--radius', cfg.borderRadius + 'px');
+    document.documentElement.style.setProperty('--accent',       cfg.accentColor);
+    document.documentElement.style.setProperty('--radius',       cfg.borderRadius + 'px');
+    document.documentElement.style.setProperty('--font-size',    cfg.fontSize     + 'px');
+    document.documentElement.style.setProperty('--widget-width', cfg.widgetWidth  + 'px');
     document.getElementById('bottom-icon').textContent  = cfg.barIcon;
     document.getElementById('bottom-label').textContent = cfg.barLabel;
 

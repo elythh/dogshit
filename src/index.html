@@ -297,6 +297,8 @@
         widget.insertBefore(row, bottomBar);
     });
 
+    const triggeredGoals = new Set();
+
     // ── UPDATE UI ──────────────────────────────────────────────
     function updateWidget() {
         localStorage.setItem('goalAmount', currentAmount);
@@ -306,27 +308,25 @@
         document.getElementById('bottom-amount').textContent =
             cfg.currency + ' ' + Math.floor(currentAmount) + ' / ' + GOAL_TARGET;
 
-        let latestDone = null;
         document.querySelectorAll('.goal-row').forEach(row => {
             const threshold = parseFloat(row.dataset.threshold);
             const bubble    = row.querySelector('.thank-you');
-            bubble.classList.remove('visible');
 
             if (currentAmount >= threshold) {
                 row.classList.add('done');
-                latestDone = { row, bubble };
+
+                if (!triggeredGoals.has(threshold)) {
+                    triggeredGoals.add(threshold);
+                    bubble.classList.add('visible');
+                    clearTimeout(bubble._hideTimer);
+                    bubble._hideTimer = setTimeout(() => {
+                        bubble.classList.remove('visible');
+                    }, 10000);
+                }
             } else {
                 row.classList.remove('done');
             }
         });
-
-        if (latestDone) {
-            latestDone.bubble.classList.add('visible');
-            clearTimeout(latestDone.bubble._hideTimer);
-            latestDone.bubble._hideTimer = setTimeout(() => {
-                latestDone.bubble.classList.remove('visible');
-            }, 10000);
-        }
     }
 
     updateWidget();

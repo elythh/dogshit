@@ -468,14 +468,20 @@
             <textarea id="output" readonly></textarea>
         </div>
 
-        <div class="output-box">
-            <div class="output-label">Widget complet (objectifs + barre)</div>
-            <div class="url-preview">https://twitch.elyth.xyz/<span>?config=</span><span id="url-full">…</span></div>
+        <div class="output-box url-row">
+            <div>
+                <div class="output-label">Widget complet (objectifs + barre)</div>
+                <div class="url-preview">https://twitch.elyth.xyz/<span>?config=</span><span id="url-full">…</span></div>
+            </div>
+            <button class="btn-copy-url" id="btn-copy-full">Copier</button>
         </div>
 
-        <div class="output-box">
-            <div class="output-label">Barre seulement</div>
-            <div class="url-preview">https://twitch.elyth.xyz/bar<span>?config=</span><span id="url-bar">…</span></div>
+        <div class="output-box url-row">
+            <div>
+                <div class="output-label">Barre seulement</div>
+                <div class="url-preview">https://twitch.elyth.xyz/bar<span>?config=</span><span id="url-bar">…</span></div>
+            </div>
+            <button class="btn-copy-url" id="btn-copy-bar">Copier</button>
         </div>
 
         <div style="display:flex; gap:10px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.07)">
@@ -503,6 +509,7 @@
 
 <script>
     const $ = id => document.getElementById(id);
+    let previewTimer;
 
     // ── Goal rows ──────────────────────────────────────────────
     function makeGoalRow(label = '', threshold = '') {
@@ -580,7 +587,6 @@
     generate();
 
     // ── Preview ────────────────────────────────────────────────
-    let previewTimer;
     function refreshPreview() {
         clearTimeout(previewTimer);
         previewTimer = setTimeout(() => {
@@ -628,6 +634,8 @@
     }
 
     makeCopyUrl('btn-copy-b64',        () => $('output').value);
+    makeCopyUrl('btn-copy-full',       () => 'https://twitch.elyth.xyz/?config='      + $('output').value);
+    makeCopyUrl('btn-copy-bar',        () => 'https://twitch.elyth.xyz/bar?config='   + $('output').value);
     makeCopyUrl('btn-copy-reset-full', () => 'https://twitch.elyth.xyz/?reset&config='  + $('output').value);
     makeCopyUrl('btn-copy-reset-bar',  () => 'https://twitch.elyth.xyz/bar?reset&config=' + $('output').value);
 

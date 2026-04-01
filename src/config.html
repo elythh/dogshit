@@ -191,6 +191,22 @@
         .goal-item input[type="number"]:focus { border-color: #f6c90e; }
         .goal-item input[type="number"]::placeholder { color: rgba(255,255,255,0.2); }
 
+        .drag-handle {
+            cursor: grab;
+            color: rgba(255,255,255,0.2);
+            font-size: 18px;
+            flex-shrink: 0;
+            padding: 0 2px;
+            user-select: none;
+            line-height: 1;
+        }
+
+        .drag-handle:active { cursor: grabbing; }
+
+        .goal-item.dragging {
+            opacity: 0.35;
+        }
+
         .btn-remove {
             width: 34px;
             height: 34px;
@@ -512,14 +528,48 @@
     let previewTimer;
 
     // ── Goal rows ──────────────────────────────────────────────
+    // ── Drag-and-drop ──────────────────────────────────────────
+    let dragSrc = null;
+
+    function onDragStart(e) {
+        dragSrc = this;
+        e.dataTransfer.effectAllowed = 'move';
+        this.classList.add('dragging');
+    }
+
+    function onDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        const list = $('goals-list');
+        const dragging = list.querySelector('.dragging');
+        if (!dragging || this === dragging) return;
+        const rect = this.getBoundingClientRect();
+        if (e.clientY < rect.top + rect.height / 2) {
+            list.insertBefore(dragging, this);
+        } else {
+            list.insertBefore(dragging, this.nextSibling);
+        }
+    }
+
+    function onDragEnd() {
+        this.classList.remove('dragging');
+        dragSrc = null;
+        generate();
+    }
+
     function makeGoalRow(label = '', threshold = '') {
         const item = document.createElement('div');
         item.className = 'goal-item';
+        item.draggable = true;
         item.innerHTML = `
+            <span class="drag-handle">⠿</span>
             <input type="text"   placeholder="Intitulé de l'objectif…" value="${label}">
-            <input type="number" placeholder="BC" min="0" value="${threshold}">
+            <input type="number" placeholder="100" min="0" value="${threshold}">
             <button class="btn-remove" title="Remove">×</button>
         `;
+        item.addEventListener('dragstart', onDragStart);
+        item.addEventListener('dragover',  onDragOver);
+        item.addEventListener('dragend',   onDragEnd);
         item.querySelector('.btn-remove').addEventListener('click', () => {
             item.remove();
             generate();

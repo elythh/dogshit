@@ -581,6 +581,10 @@
         $(id).addEventListener('input', generate);
     });
 
+    // Restore last session BEFORE the first generate() so it doesn't overwrite the saved config
+    const saved = localStorage.getItem('widgetConfig');
+    if (saved) applyConfig(saved);
+
     generate();
 
     // ── Copy URL buttons ───────────────────────────────────────
@@ -647,12 +651,6 @@
         }
         return true;
     }
-
-    // Restore last session from localStorage
-    const saved = localStorage.getItem('widgetConfig');
-    if (saved) applyConfig(saved);
-
-    generate();
 
     $('btn-import').addEventListener('click', () => {
         const raw = $('import-input').value.trim();

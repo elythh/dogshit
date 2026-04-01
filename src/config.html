@@ -16,12 +16,51 @@
             padding: 40px 20px;
         }
 
-        .page {
-            max-width: 640px;
+        .layout {
+            max-width: 1180px;
             margin: 0 auto;
+            display: flex;
+            gap: 28px;
+            align-items: flex-start;
+            padding: 0;
+        }
+
+        .config-col {
+            flex: 0 0 580px;
             display: flex;
             flex-direction: column;
             gap: 28px;
+            min-width: 0;
+        }
+
+        .preview-col {
+            flex: 0 0 512px;
+            position: sticky;
+            top: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        @media (max-width: 1100px) {
+            .layout { flex-direction: column; }
+            .preview-col { position: static; flex: none; width: 100%; }
+        }
+
+        .preview-wrap {
+            width: 480px;
+            background: #111118;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .preview-wrap iframe {
+            display: block;
+            width: 480px;
+            height: 500px;
+            border: none;
+            background: transparent;
         }
 
         h1 {
@@ -331,9 +370,9 @@
     </style>
 </head>
 <body>
-<div class="page">
-
-    <h1>🏆 Widget <span>Configurateur</span></h1>
+<div class="layout">
+    <div class="config-col">
+        <h1>🏆 Widget <span>Configurateur</span></h1>
 
 
     <!-- Settings -->
@@ -422,24 +461,21 @@
         <div class="card-title">Résultat</div>
 
         <div class="output-box">
-            <div class="output-label">Chaîne de config en base64</div>
+            <div class="output-label" style="display:flex;align-items:center;justify-content:space-between">
+                <span>Chaîne de config en base64</span>
+                <button class="btn-copy-url" id="btn-copy-b64">Copier</button>
+            </div>
             <textarea id="output" readonly></textarea>
         </div>
 
-        <div class="output-box url-row">
-            <div>
-                <div class="output-label">Widget complet (objectifs + barre)</div>
-                <div class="url-preview">https://twitch.elyth.xyz/<span>?config=</span><span id="url-full">…</span></div>
-            </div>
-            <button class="btn-copy-url" id="btn-copy-full">Copier</button>
+        <div class="output-box">
+            <div class="output-label">Widget complet (objectifs + barre)</div>
+            <div class="url-preview">https://twitch.elyth.xyz/<span>?config=</span><span id="url-full">…</span></div>
         </div>
 
-        <div class="output-box url-row">
-            <div>
-                <div class="output-label">Barre seulement</div>
-                <div class="url-preview">https://twitch.elyth.xyz/bar<span>?config=</span><span id="url-bar">…</span></div>
-            </div>
-            <button class="btn-copy-url" id="btn-copy-bar">Copier</button>
+        <div class="output-box">
+            <div class="output-label">Barre seulement</div>
+            <div class="url-preview">https://twitch.elyth.xyz/bar<span>?config=</span><span id="url-bar">…</span></div>
         </div>
 
         <div style="display:flex; gap:10px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.07)">
@@ -450,6 +486,19 @@
         <span id="url-reset-bar"  style="display:none"></span>
     </div>
 
+    </div>
+    <div class="preview-col">
+        <div class="card">
+            <div class="card-title">Aperçu en direct</div>
+            <div class="preview-wrap">
+                <iframe id="preview" scrolling="no"></iframe>
+            </div>
+            <div class="field">
+                <label for="liveAmount">Montant actuel</label>
+                <input type="number" id="liveAmount" min="0" value="0">
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -515,6 +564,7 @@
         $('url-reset-full').textContent = b64;
         $('url-reset-bar').textContent  = b64;
         localStorage.setItem('widgetConfig', b64);
+        refreshPreview();
     }
 
     // Wire up settings inputs
@@ -528,6 +578,22 @@
     if (saved) applyConfig(saved);
 
     generate();
+
+    // ── Preview ────────────────────────────────────────────────
+    let previewTimer;
+    function refreshPreview() {
+        clearTimeout(previewTimer);
+        previewTimer = setTimeout(() => {
+            $('preview').src = '/?config=' + $('output').value;
+        }, 400);
+    }
+
+    // ── Live amount ────────────────────────────────────────────
+    $('liveAmount').value = parseFloat(localStorage.getItem('goalAmount') || 0);
+    $('liveAmount').addEventListener('input', () => {
+        localStorage.setItem('goalAmount', $('liveAmount').value);
+        refreshPreview();
+    });
 
     // ── Copy URL buttons ───────────────────────────────────────
     function copyText(text) {
@@ -561,8 +627,7 @@
         });
     }
 
-    makeCopyUrl('btn-copy-full',       () => 'https://twitch.elyth.xyz/?config='        + $('output').value);
-    makeCopyUrl('btn-copy-bar',        () => 'https://twitch.elyth.xyz/bar?config='     + $('output').value);
+    makeCopyUrl('btn-copy-b64',        () => $('output').value);
     makeCopyUrl('btn-copy-reset-full', () => 'https://twitch.elyth.xyz/?reset&config='  + $('output').value);
     makeCopyUrl('btn-copy-reset-bar',  () => 'https://twitch.elyth.xyz/bar?reset&config=' + $('output').value);
 

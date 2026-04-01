@@ -49,6 +49,34 @@
             to   { opacity: 1; transform: translateX(0); }
         }
 
+        /* ── Near goal ── */
+        @keyframes nearPulse {
+            0%, 100% {
+                transform: scale(1.04);
+                box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 50%, transparent),
+                            0 0 12px color-mix(in srgb, var(--accent) 20%, transparent);
+            }
+            50% {
+                transform: scale(1.07);
+                box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 60%, transparent),
+                            0 0 28px color-mix(in srgb, var(--accent) 35%, transparent);
+            }
+        }
+
+        .goal-row.near {
+            border-color: var(--accent);
+            z-index: 1;
+            animation: nearPulse 1.4s ease-in-out infinite !important;
+        }
+
+        .goal-row.near .goal-label {
+            color: var(--accent);
+        }
+
+        .goal-row.near .goal-amount {
+            color: var(--accent);
+        }
+
         .goal-row.done {
             background: rgba(255,255,255,0.10);
         }
@@ -196,6 +224,11 @@
         body.light .goal-label,
         body.light .goal-amount {
             color: #1a1a1a;
+        }
+
+        body.light .goal-row.near .goal-label,
+        body.light .goal-row.near .goal-amount {
+            color: color-mix(in srgb, var(--accent) 80%, #000);
         }
 
         body.light .radio {
@@ -369,6 +402,7 @@
             const bubble    = row.querySelector('.thank-you');
 
             if (currentAmount >= threshold) {
+                row.classList.remove('near');
                 row.classList.add('done');
 
                 if (!triggeredGoals.has(threshold)) {
@@ -380,8 +414,11 @@
                     }, 10000);
                     launchConfetti(row);
                 }
-            } else {
+            } else if (currentAmount >= threshold * 0.8) {
                 row.classList.remove('done');
+                row.classList.add('near');
+            } else {
+                row.classList.remove('done', 'near');
             }
         });
     }

@@ -537,15 +537,6 @@
 
     $('btn-add').addEventListener('click', () => addGoal());
 
-    // Default goals
-    [
-        { label: 'Play Horror Game (Lights Off)', threshold: 200 },
-        { label: 'Let Chat Write Tweet',          threshold: 250 },
-        { label: 'Read Old Tumblr Account',       threshold: 300 },
-        { label: 'Dye Hair',                      threshold: 500 },
-        { label: 'Cursed Eating Challenge',       threshold: 600 },
-    ].forEach(g => addGoal(g.label, g.threshold));
-
     // ── Generate ───────────────────────────────────────────────
     function generate() {
         const accent = $('accentColor').value;

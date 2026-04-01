@@ -242,15 +242,20 @@
         goals:        [],
     };
 
+    function decode(raw) {
+        const s = raw.replace(/-/g, '+').replace(/_/g, '/');
+        const std = s + '='.repeat((4 - s.length % 4) % 4);
+        return JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(std), c => c.charCodeAt(0))));
+    }
+
     function loadConfig() {
-        const raw = new URLSearchParams(window.location.search).get('config');
+        const raw = new URLSearchParams(window.location.search).get('config')
+                    || localStorage.getItem('widgetConfig');
         if (!raw) return DEFAULTS;
         try {
-            const s = raw.replace(/-/g, '+').replace(/_/g, '/');
-            const std = s + '='.repeat((4 - s.length % 4) % 4);
-            return { ...DEFAULTS, ...JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(std), c => c.charCodeAt(0)))) };
+            return { ...DEFAULTS, ...decode(raw) };
         } catch (e) {
-            console.error('Invalid config param:', e);
+            console.error('Invalid config:', e);
             return DEFAULTS;
         }
     }

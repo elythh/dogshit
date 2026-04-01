@@ -323,10 +323,13 @@
     const widget   = document.getElementById('widget');
     const bottomBar = widget.querySelector('.bottom-bar');
 
+    const goalAudios = JSON.parse(localStorage.getItem('goalAudios') || '{}');
+
     cfg.goals.forEach((goal, i) => {
         const row = document.createElement('div');
         row.className = 'goal-row';
         row.dataset.threshold = goal.threshold;
+        row.dataset.index     = i;
         row.style.animationDelay = (i * 0.07) + 's';
         row.innerHTML = `
             <div class="radio"><div class="radio-inner"></div></div>
@@ -362,6 +365,8 @@
                     bubble._hideTimer = setTimeout(() => {
                         bubble.classList.remove('visible');
                     }, 10000);
+                    const audioSrc = goalAudios[row.dataset.index];
+                    if (audioSrc) new Audio(audioSrc).play().catch(() => {});
                 }
             } else {
                 row.classList.remove('done');

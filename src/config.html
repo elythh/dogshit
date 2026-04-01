@@ -208,6 +208,28 @@
             opacity: 0.35;
         }
 
+        .btn-audio {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: transparent;
+            font-size: 15px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background 0.2s, border-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-audio:hover { background: rgba(255,255,255,0.08); }
+
+        .btn-audio.has-audio {
+            border-color: rgba(246,201,14,0.5);
+            background: rgba(246,201,14,0.08);
+        }
+
         .btn-remove {
             width: 34px;
             height: 34px;
@@ -547,32 +569,26 @@
 
         <div class="output-box">
             <div class="output-label" style="display:flex;align-items:center;justify-content:space-between">
-                <span>Chaîne de config en base64</span>
-                <button class="btn-copy-url" id="btn-copy-b64">Copier</button>
+                <span>Config base64</span>
+                <div style="display:flex;gap:8px">
+                    <button class="btn-copy-url" id="btn-reveal-b64">👁 Révéler</button>
+                    <button class="btn-copy-url" id="btn-copy-b64">Copier</button>
+                </div>
             </div>
-            <textarea id="output" readonly></textarea>
+            <textarea id="output" readonly style="filter:blur(5px);user-select:none;transition:filter 0.3s"></textarea>
         </div>
 
-        <div class="output-box url-row">
-            <div>
-                <div class="output-label">Widget complet (objectifs + barre)</div>
-                <div class="url-preview">https://twitch.elyth.xyz/widget<span>?config=</span><span id="url-full">…</span></div>
-            </div>
-            <button class="btn-copy-url" id="btn-copy-full">Copier</button>
+        <div style="display:flex;gap:8px">
+            <button class="btn-copy-url" id="btn-copy-full" style="flex:1">Copier — Widget complet</button>
+            <button class="btn-copy-url" id="btn-copy-bar"  style="flex:1">Copier — Barre</button>
         </div>
 
-        <div class="output-box url-row">
-            <div>
-                <div class="output-label">Barre seulement</div>
-                <div class="url-preview">https://twitch.elyth.xyz/bar<span>?config=</span><span id="url-bar">…</span></div>
-            </div>
-            <button class="btn-copy-url" id="btn-copy-bar">Copier</button>
-        </div>
-
-        <div style="display:flex; gap:10px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.07)">
+        <div style="display:flex; gap:8px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.07)">
             <button class="btn-copy-url" id="btn-copy-reset-full" style="flex:1">↺ Reset — Widget complet</button>
-            <button class="btn-copy-url" id="btn-copy-reset-bar"  style="flex:1">↺ Reset — Barre seulement</button>
+            <button class="btn-copy-url" id="btn-copy-reset-bar"  style="flex:1">↺ Reset — Barre</button>
         </div>
+        <span id="url-full"       style="display:none"></span>
+        <span id="url-bar"        style="display:none"></span>
         <span id="url-reset-full" style="display:none"></span>
         <span id="url-reset-bar"  style="display:none"></span>
     </div>
@@ -605,6 +621,15 @@
         $('btn-hide-token').textContent = tokenHidden ? '👁 Afficher' : '👁 Cacher';
     });
 
+    // ── Base64 reveal toggle ───────────────────────────────────
+    let b64Revealed = false;
+    $('btn-reveal-b64').addEventListener('click', () => {
+        b64Revealed = !b64Revealed;
+        $('output').style.filter     = b64Revealed ? '' : 'blur(5px)';
+        $('output').style.userSelect = b64Revealed ? '' : 'none';
+        $('btn-reveal-b64').textContent = b64Revealed ? '👁 Cacher' : '👁 Révéler';
+    });
+
     // ── Goal rows ──────────────────────────────────────────────
     // ── Drag-and-drop ──────────────────────────────────────────
     let dragSrc = null;
@@ -635,29 +660,59 @@
         generate();
     }
 
-    function makeGoalRow(label = '', threshold = '') {
+    function makeGoalRow(label = '', threshold = '', audioSrc = '') {
         const item = document.createElement('div');
         item.className = 'goal-item';
         item.draggable = true;
+        if (audioSrc) item._audio = audioSrc;
         item.innerHTML = `
             <span class="drag-handle">⠿</span>
             <input type="text"   placeholder="Intitulé de l'objectif…" value="${label}">
             <input type="number" placeholder="100" min="0" value="${threshold}">
+            <button class="btn-audio ${audioSrc ? 'has-audio' : ''}" title="${audioSrc ? 'Son configuré · clic droit pour supprimer' : 'Choisir un son'}">${audioSrc ? '🔊' : '🔇'}</button>
+            <input type="file" accept="audio/*" style="display:none">
             <button class="btn-remove" title="Remove">×</button>
         `;
         item.addEventListener('dragstart', onDragStart);
         item.addEventListener('dragover',  onDragOver);
         item.addEventListener('dragend',   onDragEnd);
+
+        const audioBtn   = item.querySelector('.btn-audio');
+        const audioInput = item.querySelector('input[type="file"]');
+
+        audioBtn.addEventListener('click', () => audioInput.click());
+        audioBtn.addEventListener('contextmenu', e => {
+            e.preventDefault();
+            item._audio = '';
+            audioBtn.textContent = '🔇';
+            audioBtn.className   = 'btn-audio';
+            audioBtn.title       = 'Choisir un son';
+            generate();
+        });
+        audioInput.addEventListener('change', () => {
+            const file = audioInput.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => {
+                item._audio      = ev.target.result;
+                audioBtn.textContent = '🔊';
+                audioBtn.className   = 'btn-audio has-audio';
+                audioBtn.title       = file.name + ' · clic droit pour supprimer';
+                generate();
+            };
+            reader.readAsDataURL(file);
+        });
+
         item.querySelector('.btn-remove').addEventListener('click', () => {
             item.remove();
             generate();
         });
-        item.querySelectorAll('input').forEach(el => el.addEventListener('input', generate));
+        item.querySelectorAll('input[type="text"], input[type="number"]').forEach(el => el.addEventListener('input', generate));
         return item;
     }
 
-    function addGoal(label, threshold) {
-        $('goals-list').appendChild(makeGoalRow(label, threshold));
+    function addGoal(label, threshold, audio) {
+        $('goals-list').appendChild(makeGoalRow(label, threshold, audio));
         generate();
     }
 
@@ -690,10 +745,13 @@
         $('widgetWidthValue').textContent   = widgetWidth + ' px';
         $('rowGapValue').textContent        = rowGap      + ' px';
 
-        const goals = [...$('goals-list').querySelectorAll('.goal-item')].map(item => {
-            const [labelEl, thresholdEl] = item.querySelectorAll('input');
+        const goalAudios = {};
+        const goals = [...$('goals-list').querySelectorAll('.goal-item')].map((item, i) => {
+            const [labelEl, thresholdEl] = item.querySelectorAll('input[type="text"], input[type="number"]');
+            if (item._audio) goalAudios[i] = item._audio;
             return { label: labelEl.value.trim(), threshold: Number(thresholdEl.value) || 0 };
         }).filter(g => g.label);
+        localStorage.setItem('goalAudios', JSON.stringify(goalAudios));
 
         const cfg = {
             token:        $('token').value.trim(),
@@ -820,8 +878,9 @@
         }
 
         if (Array.isArray(cfg.goals)) {
+            const savedAudios = JSON.parse(localStorage.getItem('goalAudios') || '{}');
             $('goals-list').innerHTML = '';
-            cfg.goals.forEach(g => addGoal(g.label, g.threshold));
+            cfg.goals.forEach((g, i) => addGoal(g.label, g.threshold, savedAudios[i] || ''));
         }
         return true;
     }

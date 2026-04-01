@@ -241,52 +241,6 @@
             color: #f6c90e;
         }
 
-        /* Import */
-        .import-row {
-            display: flex;
-            gap: 10px;
-        }
-
-        .import-row input {
-            flex: 1;
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 10px;
-            padding: 10px 14px;
-            font-family: inherit;
-            font-size: 13px;
-            font-weight: 600;
-            color: #fff;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .import-row input:focus { border-color: #f6c90e; }
-        .import-row input::placeholder { color: rgba(255,255,255,0.2); }
-
-        .btn-import {
-            padding: 10px 18px;
-            border-radius: 10px;
-            border: none;
-            background: rgba(255,255,255,0.1);
-            font-family: inherit;
-            font-size: 13px;
-            font-weight: 800;
-            color: #fff;
-            cursor: pointer;
-            transition: background 0.2s;
-            white-space: nowrap;
-        }
-
-        .btn-import:hover { background: rgba(255,255,255,0.18); }
-
-        .import-error {
-            font-size: 12px;
-            font-weight: 700;
-            color: #ff6b6b;
-            min-height: 16px;
-        }
-
         /* Output */
         .output-box {
             position: relative;
@@ -381,18 +335,6 @@
 
     <h1>🏆 Widget <span>Configurateur</span></h1>
 
-    <!-- Importer -->
-    <div class="card">
-        <div class="card-title">Importer une config</div>
-        <div class="field">
-            <label>Coller une chaîne base64 existante</label>
-            <div class="import-row">
-                <input type="text" id="import-input" placeholder="Coller ici…">
-                <button class="btn-import" id="btn-import">Importer</button>
-            </div>
-            <span class="import-error" id="import-error"></span>
-        </div>
-    </div>
 
     <!-- Settings -->
     <div class="card">
@@ -652,16 +594,6 @@
         return true;
     }
 
-    $('btn-import').addEventListener('click', () => {
-        const raw = $('import-input').value.trim();
-        $('import-error').textContent = '';
-        if (!applyConfig(raw)) {
-            $('import-error').textContent = 'Chaîne invalide.';
-            return;
-        }
-        $('import-input').value = '';
-        generate();
-    });
 </script>
 </body>
 </html>

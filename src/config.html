@@ -565,12 +565,14 @@
             goals,
         };
 
-        const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(cfg))));
-        $('output').value             = b64;
+        const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(cfg))))
+            .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+        $('output').value              = b64;
         $('url-full').textContent      = b64;
         $('url-bar').textContent       = b64;
         $('url-reset-full').textContent = b64;
         $('url-reset-bar').textContent  = b64;
+        localStorage.setItem('widgetConfig', b64);
     }
 
     // Wire up settings inputs
@@ -618,16 +620,15 @@
     makeCopyUrl('btn-copy-reset-full', () => 'https://twitch.elyth.xyz/?reset&config='  + $('output').value);
     makeCopyUrl('btn-copy-reset-bar',  () => 'https://twitch.elyth.xyz/bar?reset&config=' + $('output').value);
 
-    // ── Import ─────────────────────────────────────────────────
-    $('btn-import').addEventListener('click', () => {
-        const raw = $('import-input').value.trim();
-        $('import-error').textContent = '';
+    // ── Import / restore ───────────────────────────────────────
+    function applyConfig(raw) {
         let cfg;
         try {
-            cfg = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(raw), c => c.charCodeAt(0))));
+            const s = raw.replace(/-/g, '+').replace(/_/g, '/');
+            const std = s + '='.repeat((4 - s.length % 4) % 4);
+            cfg = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(std), c => c.charCodeAt(0))));
         } catch {
-            $('import-error').textContent = 'Chaîne invalide.';
-            return;
+            return false;
         }
 
         if (cfg.token        !== undefined) $('token').value        = cfg.token;
@@ -644,7 +645,22 @@
             $('goals-list').innerHTML = '';
             cfg.goals.forEach(g => addGoal(g.label, g.threshold));
         }
+        return true;
+    }
 
+    // Restore last session from localStorage
+    const saved = localStorage.getItem('widgetConfig');
+    if (saved) applyConfig(saved);
+
+    generate();
+
+    $('btn-import').addEventListener('click', () => {
+        const raw = $('import-input').value.trim();
+        $('import-error').textContent = '';
+        if (!applyConfig(raw)) {
+            $('import-error').textContent = 'Chaîne invalide.';
+            return;
+        }
         $('import-input').value = '';
         generate();
     });

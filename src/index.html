@@ -78,12 +78,15 @@
         }
 
         .goal-row.done {
-            background: rgba(255,255,255,0.10);
+            background: rgba(255,255,255,0.03);
+            border-color: rgba(255,255,255,0.05);
+            opacity: 0.45;
+            filter: saturate(0.3);
+            transform: scale(0.97);
         }
 
         .goal-row.done .goal-label {
             text-decoration: line-through;
-            opacity: 0.55;
         }
 
         /* Radio circle */
@@ -218,7 +221,8 @@
         }
 
         body.light .goal-row.done {
-            background: rgba(255,255,255,0.95);
+            background: rgba(200,200,200,0.4);
+            border-color: rgba(0,0,0,0.04);
         }
 
         body.light .goal-label,

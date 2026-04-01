@@ -320,7 +320,13 @@
             }
         });
 
-        if (latestDone) latestDone.bubble.classList.add('visible');
+        if (latestDone) {
+            latestDone.bubble.classList.add('visible');
+            clearTimeout(latestDone.bubble._hideTimer);
+            latestDone.bubble._hideTimer = setTimeout(() => {
+                latestDone.bubble.classList.remove('visible');
+            }, 10000);
+        }
     }
 
     updateWidget();

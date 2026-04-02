@@ -64,9 +64,9 @@
 
         /* ── Gain popup ── */
         @keyframes gainFloat {
-            0%   { opacity: 1; transform: translateY(0)     scale(1);    }
-            15%  { opacity: 1; transform: translateY(-6px)  scale(1.12); }
-            100% { opacity: 0; transform: translateY(-44px) scale(0.88); }
+            0%   { opacity: 1; transform: translateY(0)    scale(1);    }
+            15%  { opacity: 1; transform: translateY(5px)  scale(1.12); }
+            100% { opacity: 0; transform: translateY(48px) scale(0.88); }
         }
 
         .gain-popup {
@@ -186,7 +186,7 @@
         pill.textContent = '+' + (Number.isInteger(gain) ? gain : gain.toFixed(2)) + ' ' + cfg.currency;
         const rect = amountEl.getBoundingClientRect();
         pill.style.left = (rect.left + rect.width / 2 - 30) + 'px';
-        pill.style.top  = (rect.top - 2) + 'px';
+        pill.style.top  = (rect.bottom + 6) + 'px';
         document.body.appendChild(pill);
         pill.addEventListener('animationend', () => pill.remove());
 

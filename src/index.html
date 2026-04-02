@@ -318,19 +318,7 @@
             transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* ── Bar glow orbit ── */
-        .bar-glow {
-            position: absolute;
-            inset: -3px;
-            pointer-events: none;
-            filter: drop-shadow(0 0 4px white) drop-shadow(0 0 10px rgba(255,255,255,0.6));
-        }
 
-        .bar-glow svg {
-            position: absolute;
-            top: 0; left: 0;
-            overflow: hidden;
-        }
     </style>
 </head>
 <body>
@@ -339,7 +327,6 @@
 
     <div class="bar-wrapper">
         <div class="gain-bubble" id="gain-bubble"></div>
-        <div class="bar-glow" id="bar-glow"></div>
         <div class="bottom-bar">
         <span class="bottom-icon" id="bottom-icon">🏆</span>
         <span class="bottom-label" id="bottom-label">Objectifs communautaires</span>
@@ -569,55 +556,6 @@
         });
     }
 
-    // ── BAR GLOW ORBIT ─────────────────────────────────────────
-    (function () {
-        const wrap = document.getElementById('bar-glow');
-        const ns   = 'http://www.w3.org/2000/svg';
-
-        const svg  = document.createElementNS(ns, 'svg');
-        const rect = document.createElementNS(ns, 'rect');
-        rect.setAttribute('fill',         'none');
-        rect.setAttribute('stroke',       'white');
-        rect.setAttribute('stroke-width', '2');
-        svg.appendChild(rect);
-        wrap.appendChild(svg);
-
-        function sizeUp() {
-            const b  = wrap.getBoundingClientRect();
-            const sw = 1;
-            svg.setAttribute('width',  b.width);
-            svg.setAttribute('height', b.height);
-            const rx = Math.min(b.height / 2, parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--radius')) || 50);
-            rect.setAttribute('x',      sw);
-            rect.setAttribute('y',      sw);
-            rect.setAttribute('width',  b.width  - sw * 2);
-            rect.setAttribute('height', b.height - sw * 2);
-            rect.setAttribute('rx',     rx);
-            rect.setAttribute('ry',     rx);
-            return rect.getTotalLength();
-        }
-
-        function triggerBarGlow() {
-            const len = sizeUp();
-
-            rect.style.transition      = 'none';
-            rect.style.strokeDasharray = `0 ${len}`;
-            rect.style.opacity         = '0';
-            void rect.getBoundingClientRect();
-
-            rect.style.transition      = 'stroke-dasharray 3s linear, opacity 0.3s ease';
-            rect.style.strokeDasharray = `${len} ${len}`;
-            rect.style.opacity         = '1';
-
-            setTimeout(() => {
-                rect.style.transition = 'opacity 0.8s ease';
-                rect.style.opacity    = '0';
-            }, 3100);
-        }
-
-        setTimeout(triggerBarGlow, 500);
-        setInterval(triggerBarGlow, 2 * 60 * 1000);
-    })();
 </script>
 </body>
 </html>

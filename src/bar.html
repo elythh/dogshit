@@ -50,6 +50,35 @@
             font-weight: 900;
             color: #2d1a00;
             letter-spacing: 0.02em;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .bottom-label.hidden {
+            opacity: 0;
+            transform: translateY(-6px);
+        }
+
+        /* ── Donor name tag ── */
+        .donor-tag {
+            position: absolute;
+            left: 52px;
+            font-size: var(--font-size);
+            font-weight: 900;
+            color: #2d1a00;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: calc(100% - 160px);
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+        }
+
+        .donor-tag.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .bottom-amount {
@@ -121,6 +150,7 @@
     <div class="bottom-bar">
     <span class="bottom-icon" id="bottom-icon">🏆</span>
     <span class="bottom-label" id="bottom-label">Objectifs communautaires</span>
+    <span class="donor-tag" id="donor-tag"></span>
     <span class="bottom-amount" id="bottom-amount">BC 0 / 0</span>
     <div class="progress-wrap">
         <div class="progress-fill" id="progress-fill" style="width:0%"></div>
@@ -214,6 +244,21 @@
 
     updateWidget();
 
+    // ── DONOR NAME ─────────────────────────────────────────────
+    function showDonor(name, type) {
+        const tag   = document.getElementById('donor-tag');
+        const label = document.getElementById('bottom-label');
+        const icon  = type === 'sub' ? '⭐' : '💛';
+        tag.textContent = icon + ' ' + name;
+        label.classList.add('hidden');
+        tag.classList.add('visible');
+        clearTimeout(tag._hideTimer);
+        tag._hideTimer = setTimeout(() => {
+            tag.classList.remove('visible');
+            label.classList.remove('hidden');
+        }, 5000);
+    }
+
     if (cfg.token) {
         const streamlabs = io(`https://sockets.streamlabs.com?token=${cfg.token}`, { transports: ['websocket'] });
 
@@ -224,11 +269,16 @@
                     const amt = parseFloat(msg.amount);
                     currentAmount += amt;
                     gain += amt;
+                    if (msg.name) showDonor(msg.name, 'donation');
                 });
             }
             if (eventData.for === 'twitch_account' || eventData.for === 'youtube_account') {
                 if (eventData.type === 'subscription' || eventData.type === 'resub') {
-                    eventData.message.forEach(() => { currentAmount += cfg.subValue; gain += cfg.subValue; });
+                    eventData.message.forEach(msg => {
+                        currentAmount += cfg.subValue;
+                        gain += cfg.subValue;
+                        if (msg.name) showDonor(msg.name, 'sub');
+                    });
                 }
             }
             if (gain > 0) showGain(gain);

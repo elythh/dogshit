@@ -62,27 +62,33 @@
             letter-spacing: 0.02em;
         }
 
-        /* ── Gain popup ── */
-        @keyframes gainFloat {
-            0%   { opacity: 1; transform: translateY(0)     scale(1);    }
-            15%  { opacity: 1; transform: translateY(-6px)  scale(1.12); }
-            100% { opacity: 0; transform: translateY(-44px) scale(0.88); }
+        /* ── Gain bubble (same pattern as .thank-you) ── */
+        .bar-wrapper {
+            position: relative;
         }
 
-        .gain-popup {
-            position: fixed;
-            pointer-events: none;
-            font-family: 'Nunito', sans-serif;
-            font-weight: 900;
-            font-size: 14px;
-            color: #fff;
+        .gain-bubble {
+            position: absolute;
+            right: 70px;
+            top: -28px;
             background: rgba(0,0,0,0.52);
             backdrop-filter: blur(6px);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 900;
+            padding: 4px 12px;
             border-radius: 20px;
-            padding: 3px 11px;
             white-space: nowrap;
-            animation: gainFloat 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(4px);
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 10;
+        }
+
+        .gain-bubble.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         @keyframes amountPop {
@@ -108,13 +114,16 @@
     </style>
 </head>
 <body>
-<div class="bottom-bar">
+<div class="bar-wrapper">
+    <div class="gain-bubble" id="gain-bubble"></div>
+    <div class="bottom-bar">
     <span class="bottom-icon" id="bottom-icon">🏆</span>
     <span class="bottom-label" id="bottom-label">Objectifs communautaires</span>
     <span class="bottom-amount" id="bottom-amount">BC 0 / 0</span>
     <div class="progress-wrap">
         <div class="progress-fill" id="progress-fill" style="width:0%"></div>
     </div>
+</div>
 </div>
 
 <script>
@@ -179,17 +188,13 @@
 
     // ── GAIN ANIMATION ─────────────────────────────────────────
     function showGain(gain) {
+        const bubble = document.getElementById('gain-bubble');
+        bubble.textContent = '+' + (Number.isInteger(gain) ? gain : gain.toFixed(2)) + ' ' + cfg.currency;
+        bubble.classList.add('visible');
+        clearTimeout(bubble._hideTimer);
+        bubble._hideTimer = setTimeout(() => bubble.classList.remove('visible'), 3000);
+
         const amountEl = document.getElementById('bottom-amount');
-
-        const pill = document.createElement('div');
-        pill.className = 'gain-popup';
-        pill.textContent = '+' + (Number.isInteger(gain) ? gain : gain.toFixed(2)) + ' ' + cfg.currency;
-        const rect = amountEl.getBoundingClientRect();
-        pill.style.left = (rect.left + rect.width / 2 - 30) + 'px';
-        pill.style.top  = (rect.top - 2) + 'px';
-        document.body.appendChild(pill);
-        pill.addEventListener('animationend', () => pill.remove());
-
         amountEl.classList.remove('amount-pop');
         void amountEl.offsetWidth;
         amountEl.classList.add('amount-pop');

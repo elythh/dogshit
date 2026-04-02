@@ -250,8 +250,16 @@
         }
 
         /* ── Confetti ── */
-        .confetti-piece {
+        #confetti-layer {
             position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: visible;
+            z-index: 9998;
+        }
+
+        .confetti-piece {
+            position: absolute;
             width: 10px;
             height: 10px;
             pointer-events: none;
@@ -318,6 +326,7 @@
     </style>
 </head>
 <body>
+<div id="confetti-layer"></div>
 <div class="widget" id="widget">
     <!-- Goals are rendered by JS from the ?config= param -->
 
@@ -496,6 +505,7 @@
     ];
 
     function launchConfetti(originEl) {
+        const layer  = document.getElementById('confetti-layer');
         const rect   = originEl.getBoundingClientRect();
         const cx     = rect.left + rect.width  / 2;
         const cy     = rect.top  + rect.height / 2;
@@ -525,7 +535,7 @@
                 animation-duration: ${dur}s;
                 animation-delay: ${delay}s;
             `;
-            document.body.appendChild(el);
+            layer.appendChild(el);
             el.addEventListener('animationend', () => el.remove());
         }
     }

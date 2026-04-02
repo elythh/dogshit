@@ -526,6 +526,26 @@
                 <input type="text" id="thankYouText" value="Merci !" placeholder="Merci !">
             </div>
         </div>
+
+        <div class="row">
+            <div class="field" style="flex:0 0 72px">
+                <label>Emoji don</label>
+                <div class="emoji-wrap">
+                    <button type="button" id="donationEmojiBtn" class="emoji-btn">💛</button>
+                    <input type="hidden" id="donationEmoji" value="💛">
+                    <emoji-picker id="emojiPickerDonation" class="hidden"></emoji-picker>
+                </div>
+            </div>
+            <div class="field" style="flex:0 0 72px">
+                <label>Emoji sub</label>
+                <div class="emoji-wrap">
+                    <button type="button" id="subEmojiBtn" class="emoji-btn">⭐</button>
+                    <input type="hidden" id="subEmoji" value="⭐">
+                    <emoji-picker id="emojiPickerSub" class="hidden"></emoji-picker>
+                </div>
+            </div>
+            <div class="field" style="flex: 1"><!-- spacer --></div>
+        </div>
     </div>
 
     <!-- Thème -->
@@ -767,10 +787,12 @@
             widgetWidth,
             rowGap,
             scale,
-            barIcon:      $('barIcon').value.trim()      || '🏆',
-            barLabel:     $('barLabel').value.trim()     || 'Objectifs communautaires',
-            currency:     $('currency').value.trim()     || 'BC',
-            thankYouText: $('thankYouText').value.trim() || 'Merci !',
+            barIcon:        $('barIcon').value.trim()        || '🏆',
+            barLabel:       $('barLabel').value.trim()       || 'Objectifs communautaires',
+            currency:       $('currency').value.trim()       || 'BC',
+            thankYouText:   $('thankYouText').value.trim()   || 'Merci !',
+            donationEmoji:  $('donationEmoji').value.trim()  || '💛',
+            subEmoji:       $('subEmoji').value.trim()       || '⭐',
             theme:        currentTheme,
             goals,
         };
@@ -793,27 +815,39 @@
         $(id).addEventListener('input', generate);
     });
 
-    // ── Emoji picker ───────────────────────────────────────────
-    const emojiBtn    = document.getElementById('barIconBtn');
-    const emojiPicker = document.getElementById('emojiPicker');
-    const barIconInput = document.getElementById('barIcon');
+    // ── Emoji pickers ──────────────────────────────────────────
+    function setupEmojiPicker(btnId, inputId, pickerId) {
+        const btn    = document.getElementById(btnId);
+        const input  = document.getElementById(inputId);
+        const picker = document.getElementById(pickerId);
 
-    emojiBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        emojiPicker.classList.toggle('hidden');
-    });
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Close all other pickers first
+            document.querySelectorAll('emoji-picker').forEach(p => {
+                if (p !== picker) p.classList.add('hidden');
+            });
+            picker.classList.toggle('hidden');
+        });
 
-    emojiPicker.addEventListener('emoji-click', (e) => {
-        const emoji = e.detail.unicode;
-        barIconInput.value = emoji;
-        emojiBtn.textContent = emoji;
-        emojiPicker.classList.add('hidden');
-        generate();
-    });
+        picker.addEventListener('emoji-click', (e) => {
+            const emoji = e.detail.unicode;
+            input.value = emoji;
+            btn.textContent = emoji;
+            picker.classList.add('hidden');
+            generate();
+        });
+
+        return { btn, input, picker };
+    }
+
+    setupEmojiPicker('barIconBtn',       'barIcon',       'emojiPicker');
+    setupEmojiPicker('donationEmojiBtn', 'donationEmoji', 'emojiPickerDonation');
+    setupEmojiPicker('subEmojiBtn',      'subEmoji',      'emojiPickerSub');
 
     document.addEventListener('click', (e) => {
-        if (!emojiBtn.contains(e.target) && !emojiPicker.contains(e.target)) {
-            emojiPicker.classList.add('hidden');
+        if (!e.target.closest('.emoji-wrap')) {
+            document.querySelectorAll('emoji-picker').forEach(p => p.classList.add('hidden'));
         }
     });
 
@@ -920,6 +954,14 @@
         if (cfg.barLabel     !== undefined) $('barLabel').value     = cfg.barLabel;
         if (cfg.currency     !== undefined) $('currency').value     = cfg.currency;
         if (cfg.thankYouText !== undefined) $('thankYouText').value = cfg.thankYouText;
+        if (cfg.donationEmoji !== undefined) {
+            $('donationEmoji').value = cfg.donationEmoji;
+            document.getElementById('donationEmojiBtn').textContent = cfg.donationEmoji;
+        }
+        if (cfg.subEmoji !== undefined) {
+            $('subEmoji').value = cfg.subEmoji;
+            document.getElementById('subEmojiBtn').textContent = cfg.subEmoji;
+        }
         if (cfg.theme !== undefined) {
             currentTheme = cfg.theme;
             document.querySelectorAll('.btn-theme').forEach(b => {

@@ -402,6 +402,8 @@
         barLabel:     'Objectifs communautaires',
         currency:     'BC',
         thankYouText: 'Merci !',
+        donationEmoji: '💛',
+        subEmoji:      '⭐',
         theme:        'dark',
         goals:        [],
     };
@@ -577,7 +579,7 @@
     function showDonor(name, type) {
         const tag   = document.getElementById('donor-tag');
         const label = document.getElementById('bottom-label');
-        const icon  = type === 'sub' ? '⭐' : '💛';
+        const icon  = type === 'sub' ? cfg.subEmoji : cfg.donationEmoji;
         tag.textContent = icon + ' ' + name;
         label.classList.add('hidden');
         tag.classList.add('visible');

@@ -524,6 +524,14 @@
         </div>
 
         <div class="field">
+            <label for="scale">Échelle globale du widget</label>
+            <div class="range-row">
+                <input type="range" id="scale" min="0.5" max="3" step="0.05" value="1">
+                <span class="range-value" id="scaleValue">×1.00</span>
+            </div>
+        </div>
+
+        <div class="field">
             <label>Mode</label>
             <div class="theme-toggle">
                 <button class="btn-theme active" id="btn-theme-dark"  data-theme="dark">🌙 Sombre</button>
@@ -684,6 +692,7 @@
         const fontSize    = Number($('fontSize').value);
         const widgetWidth = Number($('widgetWidth').value);
         const rowGap      = Number($('rowGap').value);
+        const scale       = Number($('scale').value);
 
         // Update live displays
         $('accentColorHex').textContent     = accent;
@@ -692,6 +701,7 @@
         $('fontSizeValue').textContent      = fontSize    + ' px';
         $('widgetWidthValue').textContent   = widgetWidth + ' px';
         $('rowGapValue').textContent        = rowGap      + ' px';
+        $('scaleValue').textContent         = '×' + scale.toFixed(2);
 
         const goals = [...$('goals-list').querySelectorAll('.goal-item')].map(item => {
             const [labelEl, thresholdEl] = item.querySelectorAll('input[type="text"], input[type="number"]');
@@ -707,6 +717,7 @@
             fontSize,
             widgetWidth,
             rowGap,
+            scale,
             barIcon:      $('barIcon').value.trim()      || '🏆',
             barLabel:     $('barLabel').value.trim()     || 'Objectifs communautaires',
             currency:     $('currency').value.trim()     || 'BC',
@@ -728,7 +739,7 @@
 
     // Wire up settings inputs
     ['token', 'startAmount', 'subValue', 'accentColor', 'borderRadius',
-     'fontSize', 'widgetWidth', 'rowGap',
+     'fontSize', 'widgetWidth', 'rowGap', 'scale',
      'barIcon', 'barLabel', 'currency', 'thankYouText'].forEach(id => {
         $(id).addEventListener('input', generate);
     });
@@ -811,6 +822,7 @@
         if (cfg.fontSize     !== undefined) $('fontSize').value     = cfg.fontSize;
         if (cfg.widgetWidth  !== undefined) $('widgetWidth').value  = cfg.widgetWidth;
         if (cfg.rowGap       !== undefined) $('rowGap').value       = cfg.rowGap;
+        if (cfg.scale        !== undefined) $('scale').value        = cfg.scale;
         if (cfg.barIcon      !== undefined) $('barIcon').value      = cfg.barIcon;
         if (cfg.barLabel     !== undefined) $('barLabel').value     = cfg.barLabel;
         if (cfg.currency     !== undefined) $('currency').value     = cfg.currency;

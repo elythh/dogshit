@@ -323,6 +323,7 @@
         fontSize:     15,
         widgetWidth:  480,
         rowGap:       10,
+        scale:        1,
         barIcon:      '🏆',
         barLabel:     'Objectifs communautaires',
         currency:     'BC',
@@ -361,6 +362,11 @@
     document.documentElement.style.setProperty('--font-size',    cfg.fontSize     + 'px');
     document.documentElement.style.setProperty('--widget-width', cfg.widgetWidth  + 'px');
     document.documentElement.style.setProperty('--row-gap',      cfg.rowGap       + 'px');
+    if (cfg.scale !== 1) {
+        document.body.style.transform       = `scale(${cfg.scale})`;
+        document.body.style.transformOrigin = 'top left';
+        document.body.style.overflow        = 'visible';
+    }
     document.getElementById('bottom-icon').textContent  = cfg.barIcon;
     document.getElementById('bottom-label').textContent = cfg.barLabel;
     if (cfg.theme === 'light') document.body.classList.add('light');

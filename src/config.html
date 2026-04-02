@@ -55,6 +55,7 @@
             border-radius: 12px;
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.06);
+            transition: width 0.3s ease;
         }
 
         .preview-wrap iframe {
@@ -63,6 +64,7 @@
             height: 500px;
             border: none;
             background: transparent;
+            transition: width 0.3s ease;
         }
 
         h1 {
@@ -825,7 +827,24 @@
     function refreshPreview() {
         clearTimeout(previewTimer);
         previewTimer = setTimeout(() => {
-            $('preview').src = '/widget?config=' + $('output').value;
+            // Always preview at scale:1 so the iframe shows the full widget
+            const raw = $('output').value;
+            let previewCfg;
+            try {
+                const s = raw.replace(/-/g, '+').replace(/_/g, '/');
+                const std = s + '='.repeat((4 - s.length % 4) % 4);
+                previewCfg = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(std), c => c.charCodeAt(0))));
+            } catch (e) { previewCfg = {}; }
+            previewCfg.scale = 1;
+            const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(previewCfg))))
+                .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+
+            const w = previewCfg.widgetWidth || 480;
+            const wrap = $('preview').parentElement;
+            wrap.style.width = w + 'px';
+            $('preview').style.width  = w + 'px';
+            $('preview').style.height = '500px';
+            $('preview').src = '/widget?config=' + b64;
         }, 400);
     }
 

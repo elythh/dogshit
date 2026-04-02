@@ -755,7 +755,7 @@
         const goals = [...$('goals-list').querySelectorAll('.goal-item')].map(item => {
             const [labelEl, thresholdEl] = item.querySelectorAll('input[type="text"], input[type="number"]');
             return { label: labelEl.value.trim(), threshold: Number(thresholdEl.value) || 0 };
-        }).filter(g => g.label).sort((a, b) => b.threshold - a.threshold);
+        }).filter(g => g.label).sort((a, b) => a.threshold - b.threshold);
 
         const cfg = {
             token:        $('token').value.trim(),

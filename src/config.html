@@ -6,6 +6,7 @@
     <title>BooKyy Donathon</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -412,6 +413,48 @@
         .btn-copy:hover { opacity: 0.92; }
         .btn-copy:active { transform: scale(0.98); }
         .btn-copy.copied { background: linear-gradient(90deg, #4caf7d, #3a9463); color: #fff; }
+
+        /* ── Emoji picker ── */
+        .emoji-wrap {
+            position: relative;
+        }
+
+        .emoji-btn {
+            font-size: 22px;
+            line-height: 1;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 10px;
+            padding: 9px 10px;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.2s;
+        }
+
+        .emoji-btn:hover { border-color: rgba(255,255,255,0.3); }
+
+        emoji-picker {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            z-index: 200;
+            --background: #1a1a24;
+            --border-color: rgba(255,255,255,0.1);
+            --indicator-color: #f6c90e;
+            --input-border-color: rgba(255,255,255,0.15);
+            --input-font-color: #fff;
+            --input-placeholder-color: rgba(255,255,255,0.3);
+            --outline-color: #f6c90e;
+            --category-font-color: rgba(255,255,255,0.5);
+            width: 300px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            border-radius: 14px;
+        }
+
+        emoji-picker.hidden { display: none; }
     </style>
 </head>
 <body>
@@ -458,8 +501,12 @@
 
         <div class="row">
             <div class="field" style="flex:0 0 72px">
-                <label for="barIcon">Icône</label>
-                <input type="text" id="barIcon" value="🏆" maxlength="4">
+                <label>Icône</label>
+                <div class="emoji-wrap">
+                    <button type="button" id="barIconBtn" class="emoji-btn">🏆</button>
+                    <input type="hidden" id="barIcon" value="🏆">
+                    <emoji-picker id="emojiPicker" class="hidden"></emoji-picker>
+                </div>
             </div>
             <div class="field">
                 <label for="barLabel">Titre de la barre</label>
@@ -740,8 +787,32 @@
     // Wire up settings inputs
     ['token', 'startAmount', 'subValue', 'accentColor', 'borderRadius',
      'fontSize', 'widgetWidth', 'rowGap', 'scale',
-     'barIcon', 'barLabel', 'currency', 'thankYouText'].forEach(id => {
+     'barLabel', 'currency', 'thankYouText'].forEach(id => {
         $(id).addEventListener('input', generate);
+    });
+
+    // ── Emoji picker ───────────────────────────────────────────
+    const emojiBtn    = document.getElementById('barIconBtn');
+    const emojiPicker = document.getElementById('emojiPicker');
+    const barIconInput = document.getElementById('barIcon');
+
+    emojiBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        emojiPicker.classList.toggle('hidden');
+    });
+
+    emojiPicker.addEventListener('emoji-click', (e) => {
+        const emoji = e.detail.unicode;
+        barIconInput.value = emoji;
+        emojiBtn.textContent = emoji;
+        emojiPicker.classList.add('hidden');
+        generate();
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!emojiBtn.contains(e.target) && !emojiPicker.contains(e.target)) {
+            emojiPicker.classList.add('hidden');
+        }
     });
 
     // Restore last session BEFORE the first generate() so it doesn't overwrite the saved config
@@ -823,7 +894,10 @@
         if (cfg.widgetWidth  !== undefined) $('widgetWidth').value  = cfg.widgetWidth;
         if (cfg.rowGap       !== undefined) $('rowGap').value       = cfg.rowGap;
         if (cfg.scale        !== undefined) $('scale').value        = cfg.scale;
-        if (cfg.barIcon      !== undefined) $('barIcon').value      = cfg.barIcon;
+        if (cfg.barIcon !== undefined) {
+            $('barIcon').value = cfg.barIcon;
+            document.getElementById('barIconBtn').textContent = cfg.barIcon;
+        }
         if (cfg.barLabel     !== undefined) $('barLabel').value     = cfg.barLabel;
         if (cfg.currency     !== undefined) $('currency').value     = cfg.currency;
         if (cfg.thankYouText !== undefined) $('thankYouText').value = cfg.thankYouText;

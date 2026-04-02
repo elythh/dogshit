@@ -265,6 +265,37 @@
             100% { transform: translateY(110vh) rotate(720deg) scaleX(0.4); opacity: 0; }
         }
 
+        /* ── Gain popup ── */
+        @keyframes gainFloat {
+            0%   { opacity: 1; transform: translateY(0)     scale(1);    }
+            15%  { opacity: 1; transform: translateY(-6px)  scale(1.12); }
+            100% { opacity: 0; transform: translateY(-44px) scale(0.88); }
+        }
+
+        .gain-popup {
+            position: fixed;
+            pointer-events: none;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 900;
+            font-size: 14px;
+            color: #fff;
+            background: rgba(0,0,0,0.52);
+            backdrop-filter: blur(6px);
+            border-radius: 20px;
+            padding: 3px 11px;
+            white-space: nowrap;
+            animation: gainFloat 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            z-index: 9999;
+        }
+
+        @keyframes amountPop {
+            0%   { transform: scale(1); }
+            40%  { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .amount-pop { animation: amountPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
         /* Thin progress line at bottom of bar */
         .progress-wrap {
             position: absolute;
@@ -396,6 +427,27 @@
         widget.insertBefore(row, bottomBar);
     });
 
+    // ── GAIN ANIMATION ─────────────────────────────────────────
+    function showGain(gain) {
+        const amountEl = document.getElementById('bottom-amount');
+
+        // Floating pill
+        const pill = document.createElement('div');
+        pill.className = 'gain-popup';
+        pill.textContent = '+' + (Number.isInteger(gain) ? gain : gain.toFixed(2)) + ' ' + cfg.currency;
+        const rect = amountEl.getBoundingClientRect();
+        pill.style.left = (rect.left + rect.width / 2 - 30) + 'px';
+        pill.style.top  = (rect.top - 2) + 'px';
+        document.body.appendChild(pill);
+        pill.addEventListener('animationend', () => pill.remove());
+
+        // Pop bounce on the counter
+        amountEl.classList.remove('amount-pop');
+        void amountEl.offsetWidth;
+        amountEl.classList.add('amount-pop');
+        amountEl.addEventListener('animationend', () => amountEl.classList.remove('amount-pop'), { once: true });
+    }
+
     const triggeredGoals = new Set();
 
     // ── UPDATE UI ──────────────────────────────────────────────
@@ -480,16 +532,20 @@
         const streamlabs = io(`https://sockets.streamlabs.com?token=${cfg.token}`, { transports: ['websocket'] });
 
         streamlabs.on('event', (eventData) => {
+            let gain = 0;
             if (eventData.type === 'donation') {
                 eventData.message.forEach(msg => {
-                    currentAmount += parseFloat(msg.amount);
+                    const amt = parseFloat(msg.amount);
+                    currentAmount += amt;
+                    gain += amt;
                 });
             }
             if (eventData.for === 'twitch_account' || eventData.for === 'youtube_account') {
                 if (eventData.type === 'subscription' || eventData.type === 'resub') {
-                    eventData.message.forEach(() => { currentAmount += cfg.subValue; });
+                    eventData.message.forEach(() => { currentAmount += cfg.subValue; gain += cfg.subValue; });
                 }
             }
+            if (gain > 0) showGain(gain);
             updateWidget();
         });
     }

@@ -317,6 +317,39 @@
             background: rgba(255,255,255,0.45);
             transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        /* ── Bar glow orbit ── */
+        .bar-glow {
+            position: absolute;
+            inset: -3px;
+            border-radius: calc(var(--radius) + 3px);
+            pointer-events: none;
+        }
+
+        .bar-glow::before {
+            content: '';
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.5) 30%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(8px);
+            offset-path: border-box;
+            offset-distance: 0%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+        }
+
+        @keyframes glowOrbit {
+            0%   { offset-distance: 0%;   opacity: 0; }
+            5%   { opacity: 1; }
+            95%  { opacity: 1; }
+            100% { offset-distance: 100%; opacity: 0; }
+        }
+
+        .bar-glow.active::before {
+            animation: glowOrbit 3s linear forwards;
+        }
     </style>
 </head>
 <body>
@@ -325,6 +358,7 @@
 
     <div class="bar-wrapper">
         <div class="gain-bubble" id="gain-bubble"></div>
+        <div class="bar-glow" id="bar-glow"></div>
         <div class="bottom-bar">
         <span class="bottom-icon" id="bottom-icon">🏆</span>
         <span class="bottom-label" id="bottom-label">Objectifs communautaires</span>
@@ -553,6 +587,17 @@
             updateWidget();
         });
     }
+
+    // ── BAR GLOW ORBIT ─────────────────────────────────────────
+    function triggerBarGlow() {
+        const glow = document.getElementById('bar-glow');
+        glow.classList.remove('active');
+        void glow.offsetWidth;
+        glow.classList.add('active');
+        glow.addEventListener('animationend', () => glow.classList.remove('active'), { once: true });
+    }
+    triggerBarGlow();
+    setInterval(triggerBarGlow, 2 * 60 * 1000);
 </script>
 </body>
 </html>

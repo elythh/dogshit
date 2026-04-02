@@ -142,6 +142,35 @@
         }
 
         /* ── Bar glow orbit ── */
+
+        /* ── Glass theme ── */
+        body.glass .bottom-bar {
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(24px) saturate(1.6);
+            -webkit-backdrop-filter: blur(24px) saturate(1.6);
+            border: 1px solid rgba(255,255,255,0.25);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        body.glass .bottom-label,
+        body.glass .donor-tag {
+            color: #fff;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+
+        body.glass .bottom-amount {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+        }
+
+        body.glass .gain-bubble {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
     </style>
 </head>
 <body>
@@ -213,6 +242,7 @@
     }
     document.getElementById('bottom-icon').textContent  = cfg.barIcon;
     document.getElementById('bottom-label').textContent = cfg.barLabel;
+    if (cfg.theme === 'glass') document.body.classList.add('glass');
 
     const GOAL_TARGET = cfg.goals.length
         ? Math.max(...cfg.goals.map(g => g.threshold))

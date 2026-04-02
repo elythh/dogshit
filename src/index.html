@@ -282,6 +282,80 @@
             border-top-color: #1a1a1a;
         }
 
+        /* ── Glass theme ── */
+        body.glass .goal-row {
+            background: linear-gradient(
+                to right,
+                color-mix(in srgb, var(--accent) 22%, rgba(255,255,255,0.12)) var(--progress, 0%),
+                rgba(255,255,255,0.08) var(--progress, 0%)
+            );
+            backdrop-filter: blur(24px) saturate(1.6);
+            -webkit-backdrop-filter: blur(24px) saturate(1.6);
+            border: 1px solid rgba(255,255,255,0.25);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        body.glass .goal-row.done {
+            background: rgba(255,255,255,0.04);
+            border-color: rgba(255,255,255,0.08);
+        }
+
+        body.glass .goal-label,
+        body.glass .goal-amount {
+            color: #fff;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+
+        body.glass .goal-row.near .goal-label,
+        body.glass .goal-row.near .goal-amount {
+            color: var(--accent);
+        }
+
+        body.glass .radio {
+            border-color: rgba(255,255,255,0.4);
+        }
+
+        body.glass .thank-you {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+        }
+
+        body.glass .thank-you::after {
+            border-top-color: rgba(255,255,255,0.15);
+        }
+
+        body.glass .bottom-bar {
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(24px) saturate(1.6);
+            -webkit-backdrop-filter: blur(24px) saturate(1.6);
+            border: 1px solid rgba(255,255,255,0.25);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        body.glass .bottom-label,
+        body.glass .donor-tag {
+            color: #fff;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+
+        body.glass .bottom-amount {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+        }
+
+        body.glass .gain-bubble {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
         /* ── Confetti ── */
         .confetti-piece {
             position: absolute;
@@ -446,6 +520,7 @@
     document.getElementById('bottom-icon').textContent  = cfg.barIcon;
     document.getElementById('bottom-label').textContent = cfg.barLabel;
     if (cfg.theme === 'light') document.body.classList.add('light');
+    if (cfg.theme === 'glass') document.body.classList.add('glass');
 
     const GOAL_TARGET = cfg.goals.length
         ? Math.max(...cfg.goals.map(g => g.threshold))

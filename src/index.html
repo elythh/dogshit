@@ -469,7 +469,14 @@
         document.getElementById('bottom-amount').textContent =
             cfg.currency + ' ' + Math.floor(currentAmount) + ' / ' + GOAL_TARGET;
 
-        document.querySelectorAll('.goal-row').forEach(row => {
+        // Find the single next goal to reach (lowest undone threshold)
+        const rows = [...document.querySelectorAll('.goal-row')];
+        const nextThreshold = rows
+            .map(r => parseFloat(r.dataset.threshold))
+            .filter(t => currentAmount < t)
+            .reduce((min, t) => (t < min ? t : min), Infinity);
+
+        rows.forEach(row => {
             const threshold = parseFloat(row.dataset.threshold);
             const bubble    = row.querySelector('.thank-you');
             const pct       = Math.min((currentAmount / threshold) * 100, 100).toFixed(1) + '%';
@@ -489,7 +496,7 @@
                     }, 10000);
                     launchConfetti(row);
                 }
-            } else if (currentAmount >= threshold * 0.8) {
+            } else if (threshold === nextThreshold && currentAmount >= threshold * 0.8) {
                 row.classList.remove('done');
                 row.classList.add('near');
             } else {

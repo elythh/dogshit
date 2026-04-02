@@ -419,6 +419,9 @@
         ? Math.max(...cfg.goals.map(g => g.threshold))
         : 0;
 
+    // Sort goals descending by threshold
+    cfg.goals.sort((a, b) => b.threshold - a.threshold);
+
     // Persist amount across reloads, seeded with startAmount on first visit
     let currentAmount = parseFloat(localStorage.getItem('goalAmount') ?? cfg.startAmount);
 

@@ -34,7 +34,11 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            background: rgba(255,255,255,0.07);
+            background: linear-gradient(
+                to right,
+                color-mix(in srgb, var(--accent) 28%, transparent) var(--progress, 0%),
+                rgba(255,255,255,0.07) var(--progress, 0%)
+            );
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255,255,255,0.12);
             border-radius: var(--radius);
@@ -42,6 +46,7 @@
             animation: fadeSlideIn 0.4s ease both;
             position: relative;
             overflow: visible;
+            transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         @keyframes fadeSlideIn {
@@ -78,7 +83,6 @@
         }
 
         .goal-row.done {
-            background: rgba(255,255,255,0.03);
             border-color: rgba(255,255,255,0.05);
             opacity: 0.45;
             filter: saturate(0.3);
@@ -474,6 +478,9 @@
         document.querySelectorAll('.goal-row').forEach(row => {
             const threshold = parseFloat(row.dataset.threshold);
             const bubble    = row.querySelector('.thank-you');
+            const pct       = Math.min((currentAmount / threshold) * 100, 100).toFixed(1) + '%';
+
+            row.style.setProperty('--progress', pct);
 
             if (currentAmount >= threshold) {
                 row.classList.remove('near');

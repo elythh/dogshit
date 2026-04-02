@@ -269,7 +269,7 @@
                     const amt = parseFloat(msg.amount);
                     currentAmount += amt;
                     gain += amt;
-                    if (msg.name) showDonor(msg.name, 'donation');
+                    if (msg.from || msg.name) showDonor(msg.from || msg.name, 'donation');
                 });
             }
             if (eventData.for === 'twitch_account' || eventData.for === 'youtube_account') {

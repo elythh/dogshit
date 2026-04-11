@@ -431,7 +431,7 @@
                 eventData.message.forEach(msg => {
                     const amt     = parseFloat(msg.amount);
                     const base    = Math.round(amt * cfg.donationSeconds);
-                    const lucky   = Math.random() < 0.80;
+                    const lucky   = Math.random() < 0.05;
                     const added   = lucky ? base * 3 : base;
                     addSeconds(added);
                     gained += added;
@@ -442,7 +442,7 @@
             if (eventData.for === 'twitch_account' || eventData.for === 'youtube_account') {
                 if (eventData.type === 'subscription' || eventData.type === 'resub') {
                     eventData.message.forEach(msg => {
-                        const lucky = Math.random() < 0.80;
+                        const lucky = Math.random() < 0.05;
                         const added = lucky ? cfg.subSeconds * 3 : cfg.subSeconds;
                         addSeconds(added);
                         gained += added;

@@ -241,7 +241,7 @@
 <body>
 <div class="lucky-overlay" id="lucky-overlay">
     <div class="lucky-glow"></div>
-    <div class="lucky-label">🍀 10×</div>
+    <div class="lucky-label">🍀 3×</div>
 </div>
 <div class="bar-wrapper">
     <div class="gain-bubble" id="gain-bubble"></div>
@@ -420,7 +420,7 @@
                     const amt     = parseFloat(msg.amount);
                     const base    = Math.round(amt * cfg.donationSeconds);
                     const lucky   = Math.random() < 0.05;
-                    const added   = lucky ? base * 10 : base;
+                    const added   = lucky ? base * 3 : base;
                     addSeconds(added);
                     gained += added;
                     if (lucky) showLucky();

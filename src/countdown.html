@@ -18,7 +18,7 @@
         body {
             font-family: 'Nunito', sans-serif;
             background: transparent;
-            overflow: hidden;
+            overflow: visible;
             padding: 36px 16px 16px;
             width: var(--widget-width);
         }
@@ -137,6 +137,77 @@
             transform: translateY(0);
         }
 
+        /* ── 10× lucky overlay ── */
+        @keyframes luckyPop {
+            0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4) rotate(-8deg); }
+            18%  { opacity: 1; transform: translate(-50%, -50%) scale(1.25) rotate(4deg); }
+            38%  { transform: translate(-50%, -50%) scale(0.95) rotate(-2deg); }
+            52%  { transform: translate(-50%, -50%) scale(1.08) rotate(1deg); }
+            65%  { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+            80%  { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.1) rotate(0deg); }
+        }
+
+        @keyframes luckyShine {
+            0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+            30%  { opacity: 0.55; }
+            70%  { opacity: 0.35; }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.6); }
+        }
+
+        @keyframes luckyBarFlash {
+            0%, 100% { filter: brightness(1); }
+            15%      { filter: brightness(2.2); }
+            30%      { filter: brightness(1.1); }
+            45%      { filter: brightness(1.8); }
+            60%      { filter: brightness(1); }
+        }
+
+        .lucky-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .lucky-overlay.active { display: block; }
+
+        .lucky-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 340px;
+            height: 340px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            animation: luckyShine 2.2s ease forwards;
+        }
+
+        .lucky-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Nunito', sans-serif;
+            font-size: 96px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: -2px;
+            text-shadow:
+                0 0 40px var(--accent),
+                0 0 80px var(--accent),
+                0 4px 0 rgba(0,0,0,0.4);
+            white-space: nowrap;
+            animation: luckyPop 2.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            line-height: 1;
+        }
+
+        .lucky-bar-flash {
+            animation: luckyBarFlash 0.7s ease both;
+        }
+
         /* ── Glass theme ── */
         body.glass .bottom-bar {
             background: rgba(255,255,255,0.12);
@@ -168,6 +239,10 @@
     </style>
 </head>
 <body>
+<div class="lucky-overlay" id="lucky-overlay">
+    <div class="lucky-glow"></div>
+    <div class="lucky-label">🍀 10×</div>
+</div>
 <div class="bar-wrapper">
     <div class="gain-bubble" id="gain-bubble"></div>
     <div class="bottom-bar">
@@ -285,6 +360,26 @@
     tick();
     setInterval(tick, 250);
 
+    // ── Lucky 10× ────────────────────────────────────────────────
+    function showLucky() {
+        const overlay = document.getElementById('lucky-overlay');
+        const bar     = document.querySelector('.bottom-bar');
+
+        // Reset by cloning the overlay (re-triggers CSS animation)
+        const fresh = overlay.cloneNode(true);
+        overlay.parentNode.replaceChild(fresh, overlay);
+        fresh.classList.add('active');
+
+        bar.classList.remove('lucky-bar-flash');
+        void bar.offsetWidth;
+        bar.classList.add('lucky-bar-flash');
+
+        setTimeout(() => {
+            fresh.classList.remove('active');
+            bar.classList.remove('lucky-bar-flash');
+        }, 2200);
+    }
+
     // ── Gain animation ───────────────────────────────────────────
     function showGain(secs) {
         const bubble = document.getElementById('gain-bubble');
@@ -322,10 +417,13 @@
 
             if (eventData.type === 'donation') {
                 eventData.message.forEach(msg => {
-                    const amt   = parseFloat(msg.amount);
-                    const added = Math.round(amt * cfg.donationSeconds);
+                    const amt     = parseFloat(msg.amount);
+                    const base    = Math.round(amt * cfg.donationSeconds);
+                    const lucky   = Math.random() < 0.05;
+                    const added   = lucky ? base * 10 : base;
                     addSeconds(added);
                     gained += added;
+                    if (lucky) showLucky();
                     if (msg.from || msg.name) showDonor(msg.from || msg.name, 'donation');
                 });
             }

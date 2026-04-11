@@ -584,6 +584,11 @@
         </div>
 
         <div class="field">
+            <label for="screamerAudioUrl">Audio screamer (URL)</label>
+            <input type="text" id="screamerAudioUrl" placeholder="https://…/scream.mp3">
+        </div>
+
+        <div class="field">
             <label for="countdownAccentColor">Couleur du countdown</label>
             <div class="color-row">
                 <input type="color" id="countdownAccentColor" value="#f6c90e">
@@ -846,6 +851,7 @@
             countdownIcon:   $('countdownIcon').value.trim()         || '⏱',
             countdownLabel:  $('countdownLabel').value.trim()        || 'Countdown',
             countdownAccentColor: countdownAccent,
+            screamerAudioUrl:     $('screamerAudioUrl').value.trim(),
             theme:        currentTheme,
             goals,
         };
@@ -861,7 +867,7 @@
     ['token', 'startAmount', 'subValue', 'accentColor', 'borderRadius',
      'fontSize', 'widgetWidth', 'rowGap', 'scale',
      'barLabel', 'currency', 'thankYouText',
-     'startSeconds', 'subSeconds', 'donationSeconds', 'countdownLabel', 'countdownAccentColor'].forEach(id => {
+     'startSeconds', 'subSeconds', 'donationSeconds', 'countdownLabel', 'countdownAccentColor', 'screamerAudioUrl'].forEach(id => {
         $(id).addEventListener('input', generate);
     });
 
@@ -1018,6 +1024,7 @@
         if (cfg.startSeconds    !== undefined) $('startSeconds').value    = cfg.startSeconds;
         if (cfg.subSeconds      !== undefined) $('subSeconds').value      = cfg.subSeconds;
         if (cfg.donationSeconds !== undefined) $('donationSeconds').value = cfg.donationSeconds;
+        if (cfg.screamerAudioUrl !== undefined) $('screamerAudioUrl').value = cfg.screamerAudioUrl;
         if (cfg.countdownLabel  !== undefined) $('countdownLabel').value  = cfg.countdownLabel;
         if (cfg.countdownAccentColor !== undefined) {
             $('countdownAccentColor').value = cfg.countdownAccentColor;

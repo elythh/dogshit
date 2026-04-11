@@ -208,6 +208,26 @@
             animation: luckyBarFlash 0.7s ease both;
         }
 
+        /* ── Screamer flash ── */
+        @keyframes screamFlash {
+            0%   { opacity: 0; }
+            8%   { opacity: 1; }
+            92%  { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .screamer-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            pointer-events: none;
+            background: #fff;
+            animation: screamFlash 0.18s ease forwards;
+        }
+
+        .screamer-overlay.active { display: block; }
+
         /* ── Glass theme ── */
         body.glass .bottom-bar {
             background: rgba(255,255,255,0.12);
@@ -239,6 +259,7 @@
     </style>
 </head>
 <body>
+<div class="screamer-overlay" id="screamer-overlay"></div>
 <div class="lucky-overlay" id="lucky-overlay">
     <div class="lucky-glow"></div>
     <div class="lucky-label">🍀 3×</div>
@@ -262,14 +283,15 @@
         accentColor:          '#f6c90e',
         countdownAccentColor: '',
         borderRadius:         50,
-        fontSize:        15,
-        widgetWidth:     480,
-        scale:           1,
-        countdownIcon:   '⏱',
-        countdownLabel:  'Countdown',
-        subEmoji:        '⭐',
-        donationEmoji:   '💛',
-        theme:           'dark',
+        fontSize:             15,
+        widgetWidth:          480,
+        scale:                1,
+        countdownIcon:        '⏱',
+        countdownLabel:       'Countdown',
+        subEmoji:             '⭐',
+        donationEmoji:        '💛',
+        theme:                'dark',
+        screamerAudioUrl:     '',
     };
 
     function decode(raw) {
@@ -407,6 +429,32 @@
             tag.classList.remove('visible');
             label.classList.remove('hidden');
         }, 5000);
+    }
+
+    // ── Screamer ─────────────────────────────────────────────────
+    if (cfg.screamerAudioUrl) {
+        const screamAudio = new Audio(cfg.screamerAudioUrl);
+        screamAudio.preload = 'auto';
+
+        function triggerScreamer() {
+            const flashEl = document.getElementById('screamer-overlay');
+            const fresh = flashEl.cloneNode(true);
+            flashEl.parentNode.replaceChild(fresh, flashEl);
+            fresh.classList.add('active');
+            setTimeout(() => fresh.classList.remove('active'), 200);
+
+            screamAudio.currentTime = 0;
+            screamAudio.play().catch(() => {});
+
+            scheduleScreamer();
+        }
+
+        function scheduleScreamer() {
+            const delay = 30000 + Math.random() * 10000; // 30–40 s
+            setTimeout(triggerScreamer, delay);
+        }
+
+        scheduleScreamer();
     }
 
     if (cfg.token) {

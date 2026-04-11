@@ -548,6 +548,42 @@
         </div>
     </div>
 
+    <!-- Countdown -->
+    <div class="card">
+        <div class="card-title">Countdown</div>
+
+        <div class="field">
+            <label for="startSeconds">Durée de départ (secondes)</label>
+            <input type="number" id="startSeconds" placeholder="600" min="0" value="600">
+        </div>
+
+        <div class="row">
+            <div class="field">
+                <label for="subSeconds">Secondes par sub</label>
+                <input type="number" id="subSeconds" placeholder="60" min="0" value="60">
+            </div>
+            <div class="field">
+                <label for="donationSeconds">Secondes par dollar de don</label>
+                <input type="number" id="donationSeconds" placeholder="10" min="0" value="10">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="field" style="flex:0 0 72px">
+                <label>Icône</label>
+                <div class="emoji-wrap">
+                    <button type="button" id="countdownIconBtn" class="emoji-btn">⏱</button>
+                    <input type="hidden" id="countdownIcon" value="⏱">
+                    <emoji-picker id="emojiPickerCountdown" class="hidden"></emoji-picker>
+                </div>
+            </div>
+            <div class="field">
+                <label for="countdownLabel">Titre du countdown</label>
+                <input type="text" id="countdownLabel" value="Countdown">
+            </div>
+        </div>
+    </div>
+
     <!-- Thème -->
     <div class="card">
         <div class="card-title">Thème</div>
@@ -643,10 +679,12 @@
             <button class="btn-copy-url" id="btn-copy-reset-full" style="flex:1">↺ Reset — Widget complet</button>
             <button class="btn-copy-url" id="btn-copy-reset-bar"  style="flex:1">↺ Reset — Barre</button>
         </div>
-        <span id="url-full"       style="display:none"></span>
-        <span id="url-bar"        style="display:none"></span>
-        <span id="url-reset-full" style="display:none"></span>
-        <span id="url-reset-bar"  style="display:none"></span>
+        <div style="display:flex;gap:8px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.07)">
+            <button class="btn-copy-url" id="btn-copy-countdown"       style="flex:1">Copier — Countdown</button>
+            <button class="btn-copy-url" id="btn-copy-reset-countdown" style="flex:1">↺ Reset — Countdown</button>
+        </div>
+        <span id="url-countdown"       style="display:none"></span>
+        <span id="url-reset-countdown" style="display:none"></span>
     </div>
 
     </div>
@@ -794,6 +832,11 @@
             thankYouText:   $('thankYouText').value.trim()   || 'Merci !',
             donationEmoji:  $('donationEmoji').value.trim()  || '💛',
             subEmoji:       $('subEmoji').value.trim()       || '⭐',
+            startSeconds:    Number($('startSeconds').value)    || 600,
+            subSeconds:      Number($('subSeconds').value)      || 60,
+            donationSeconds: Number($('donationSeconds').value) || 10,
+            countdownIcon:   $('countdownIcon').value.trim()   || '⏱',
+            countdownLabel:  $('countdownLabel').value.trim()  || 'Countdown',
             theme:        currentTheme,
             goals,
         };
@@ -812,7 +855,8 @@
     // Wire up settings inputs
     ['token', 'startAmount', 'subValue', 'accentColor', 'borderRadius',
      'fontSize', 'widgetWidth', 'rowGap', 'scale',
-     'barLabel', 'currency', 'thankYouText'].forEach(id => {
+     'barLabel', 'currency', 'thankYouText',
+     'startSeconds', 'subSeconds', 'donationSeconds', 'countdownLabel'].forEach(id => {
         $(id).addEventListener('input', generate);
     });
 
@@ -845,6 +889,7 @@
     setupEmojiPicker('barIconBtn',       'barIcon',       'emojiPicker');
     setupEmojiPicker('donationEmojiBtn', 'donationEmoji', 'emojiPickerDonation');
     setupEmojiPicker('subEmojiBtn',      'subEmoji',      'emojiPickerSub');
+    setupEmojiPicker('countdownIconBtn', 'countdownIcon', 'emojiPickerCountdown');
 
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.emoji-wrap')) {
@@ -922,11 +967,13 @@
         });
     }
 
-    makeCopyUrl('btn-copy-b64',        () => $('output').value);
-    makeCopyUrl('btn-copy-full',       () => 'https://twitch.elyth.xyz/widget?config='        + $('output').value);
-    makeCopyUrl('btn-copy-bar',        () => 'https://twitch.elyth.xyz/bar?config='           + $('output').value);
-    makeCopyUrl('btn-copy-reset-full', () => 'https://twitch.elyth.xyz/widget?reset&config='  + $('output').value);
-    makeCopyUrl('btn-copy-reset-bar',  () => 'https://twitch.elyth.xyz/bar?reset&config='     + $('output').value);
+    makeCopyUrl('btn-copy-b64',              () => $('output').value);
+    makeCopyUrl('btn-copy-full',             () => 'https://twitch.elyth.xyz/widget?config='        + $('output').value);
+    makeCopyUrl('btn-copy-bar',              () => 'https://twitch.elyth.xyz/bar?config='           + $('output').value);
+    makeCopyUrl('btn-copy-reset-full',       () => 'https://twitch.elyth.xyz/widget?reset&config='  + $('output').value);
+    makeCopyUrl('btn-copy-reset-bar',        () => 'https://twitch.elyth.xyz/bar?reset&config='     + $('output').value);
+    makeCopyUrl('btn-copy-countdown',        () => 'https://twitch.elyth.xyz/countdown?config='     + $('output').value);
+    makeCopyUrl('btn-copy-reset-countdown',  () => 'https://twitch.elyth.xyz/countdown?reset&config=' + $('output').value);
 
     // ── Import / restore ───────────────────────────────────────
     function applyConfig(raw) {
@@ -962,6 +1009,14 @@
         if (cfg.subEmoji !== undefined) {
             $('subEmoji').value = cfg.subEmoji;
             document.getElementById('subEmojiBtn').textContent = cfg.subEmoji;
+        }
+        if (cfg.startSeconds    !== undefined) $('startSeconds').value    = cfg.startSeconds;
+        if (cfg.subSeconds      !== undefined) $('subSeconds').value      = cfg.subSeconds;
+        if (cfg.donationSeconds !== undefined) $('donationSeconds').value = cfg.donationSeconds;
+        if (cfg.countdownLabel  !== undefined) $('countdownLabel').value  = cfg.countdownLabel;
+        if (cfg.countdownIcon !== undefined) {
+            $('countdownIcon').value = cfg.countdownIcon;
+            document.getElementById('countdownIconBtn').textContent = cfg.countdownIcon;
         }
         if (cfg.theme !== undefined) {
             currentTheme = cfg.theme;

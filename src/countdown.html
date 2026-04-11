@@ -73,6 +73,13 @@
             transform: translateY(0);
         }
 
+        .timer-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
         .timer-display {
             background: transparent;
             border-radius: 0;
@@ -104,8 +111,9 @@
         /* Gain bubble */
         .gain-bubble {
             position: absolute;
-            right: 70px;
+            left: 50%;
             top: -28px;
+            transform: translateX(-50%) translateY(4px);
             background: white;
             color: #333;
             font-size: 13px;
@@ -116,14 +124,13 @@
             box-shadow: 0 2px 12px rgba(0,0,0,0.2);
             pointer-events: none;
             opacity: 0;
-            transform: translateY(4px);
             transition: opacity 0.3s, transform 0.3s;
             z-index: 10;
         }
 
         .gain-bubble.visible {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateX(-50%) translateY(0);
         }
 
         /* ── 10× lucky overlay ── */
@@ -154,8 +161,8 @@
 
         .lucky-overlay {
             display: none;
-            position: fixed;
-            inset: 0;
+            position: absolute;
+            inset: -20px;
             z-index: 100;
             pointer-events: none;
         }
@@ -166,8 +173,8 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 340px;
-            height: 340px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
             transform: translate(-50%, -50%);
@@ -180,14 +187,14 @@
             left: 50%;
             transform: translate(-50%, -50%);
             font-family: 'Nunito', sans-serif;
-            font-size: 96px;
+            font-size: 22px;
             font-weight: 900;
             color: #fff;
-            letter-spacing: -2px;
+            letter-spacing: -1px;
             text-shadow:
-                0 0 40px var(--accent),
-                0 0 80px var(--accent),
-                0 4px 0 rgba(0,0,0,0.4);
+                0 0 12px var(--accent),
+                0 0 24px var(--accent),
+                0 2px 0 rgba(0,0,0,0.4);
             white-space: nowrap;
             animation: luckyPop 2.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
             line-height: 1;
@@ -225,17 +232,19 @@
 </head>
 <body>
 <div class="screamer-overlay" id="screamer-overlay"></div>
-<div class="lucky-overlay" id="lucky-overlay">
-    <div class="lucky-glow"></div>
-    <div class="lucky-label">🍀 3×</div>
-</div>
 <div class="bar-wrapper">
-    <div class="gain-bubble" id="gain-bubble"></div>
     <div class="bottom-bar">
         <span class="bottom-icon" id="bottom-icon">⏱</span>
         <span class="bottom-label" id="bottom-label">Countdown</span>
         <span class="donor-tag" id="donor-tag"></span>
-        <span class="timer-display" id="timer-display">00:00</span>
+        <div class="timer-wrapper">
+            <span class="timer-display" id="timer-display">00:00</span>
+            <div class="gain-bubble" id="gain-bubble"></div>
+            <div class="lucky-overlay" id="lucky-overlay">
+                <div class="lucky-glow"></div>
+                <div class="lucky-label">🍀 3×</div>
+            </div>
+        </div>
     </div>
 </div>
 

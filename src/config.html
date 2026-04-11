@@ -683,8 +683,6 @@
             <button class="btn-copy-url" id="btn-copy-countdown"       style="flex:1">Copier — Countdown</button>
             <button class="btn-copy-url" id="btn-copy-reset-countdown" style="flex:1">↺ Reset — Countdown</button>
         </div>
-        <span id="url-countdown"       style="display:none"></span>
-        <span id="url-reset-countdown" style="display:none"></span>
     </div>
 
     </div>
@@ -843,11 +841,7 @@
 
         const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(cfg))))
             .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-        $('output').value              = b64;
-        $('url-full').textContent      = b64;
-        $('url-bar').textContent       = b64;
-        $('url-reset-full').textContent = b64;
-        $('url-reset-bar').textContent  = b64;
+        $('output').value = b64;
         localStorage.setItem('widgetConfig', b64);
         refreshPreview();
     }

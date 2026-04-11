@@ -427,7 +427,6 @@
                     addSeconds(added);
                     gained += added;
                     if (lucky) { showLucky(); triggerScreamer(); }
-                    if (msg.from || msg.name) showDonor(msg.from || msg.name, 'donation');
                 });
             }
 
@@ -439,7 +438,6 @@
                         addSeconds(added);
                         gained += added;
                         if (lucky) { showLucky(); triggerScreamer(); }
-                        if (msg.name) showDonor(msg.name, 'sub');
                     });
                 }
             }

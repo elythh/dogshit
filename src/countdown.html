@@ -445,16 +445,7 @@
 
         screamAudio.currentTime = 0;
         screamAudio.play().catch(() => {});
-
-        scheduleScreamer();
     }
-
-    function scheduleScreamer() {
-        const delay = 30000 + Math.random() * 10000; // 30–40 s
-        setTimeout(triggerScreamer, delay);
-    }
-
-    scheduleScreamer();
 
     if (cfg.token) {
         const streamlabs = io(`https://sockets.streamlabs.com?token=${cfg.token}`, { transports: ['websocket'] });

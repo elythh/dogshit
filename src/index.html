@@ -551,12 +551,9 @@
     if (cfg.theme === 'light') document.body.classList.add('light');
     if (cfg.theme === 'glass') document.body.classList.add('glass');
 
-    const GOAL_TARGET = cfg.goals.length
+    const MAX_TARGET = cfg.goals.length
         ? Math.max(...cfg.goals.map(g => g.threshold))
         : 0;
-
-    // Sort goals descending by threshold
-    cfg.goals.sort((a, b) => a.threshold - b.threshold);
 
     // Restore the running total across reloads (crash-safe).
     // If startAmount changed in the config URL it means an intentional reset,
@@ -572,6 +569,7 @@
     const widget   = document.getElementById('widget');
     const bottomBar = widget.querySelector('.bar-wrapper');
 
+    cfg.goals.sort((a, b) => a.threshold - b.threshold);
     cfg.goals.forEach((goal, i) => {
         const row = document.createElement('div');
         row.className = 'goal-row';
@@ -607,17 +605,18 @@
     function updateWidget() {
         localStorage.setItem('goalAmount', currentAmount);
 
-        const pct = GOAL_TARGET ? Math.min((currentAmount / GOAL_TARGET) * 100, 100) : 0;
-        document.getElementById('progress-fill').style.width = pct + '%';
-        document.getElementById('bottom-amount').textContent =
-            cfg.currency + ' ' + Math.floor(currentAmount) + ' / ' + GOAL_TARGET;
-
-        // Find the single next goal to reach (lowest undone threshold)
+        // Find the next unmet goal; fall back to the max once all are done
         const rows = [...document.querySelectorAll('.goal-row')];
         const nextThreshold = rows
             .map(r => parseFloat(r.dataset.threshold))
             .filter(t => currentAmount < t)
             .reduce((min, t) => (t < min ? t : min), Infinity);
+        const barTarget = isFinite(nextThreshold) ? nextThreshold : MAX_TARGET;
+
+        const pct = barTarget ? Math.min((currentAmount / barTarget) * 100, 100) : 0;
+        document.getElementById('progress-fill').style.width = pct + '%';
+        document.getElementById('bottom-amount').textContent =
+            cfg.currency + ' ' + Math.floor(currentAmount) + ' / ' + barTarget;
 
         rows.forEach(row => {
             const threshold = parseFloat(row.dataset.threshold);

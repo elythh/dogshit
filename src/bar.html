@@ -257,7 +257,7 @@
     document.getElementById('bottom-label').textContent = cfg.barLabel;
     if (cfg.theme === 'glass') document.body.classList.add('glass');
 
-    const GOAL_TARGET = cfg.goals.length
+    const MAX_TARGET = cfg.goals.length
         ? Math.max(...cfg.goals.map(g => g.threshold))
         : 0;
 
@@ -286,10 +286,17 @@
     function updateWidget() {
         localStorage.setItem('goalAmount', currentAmount);
 
-        const pct = GOAL_TARGET ? Math.min((currentAmount / GOAL_TARGET) * 100, 100) : 0;
+        // Next unmet goal threshold; fall back to max once all are done
+        const nextThreshold = cfg.goals
+            .map(g => g.threshold)
+            .filter(t => currentAmount < t)
+            .reduce((min, t) => (t < min ? t : min), Infinity);
+        const barTarget = isFinite(nextThreshold) ? nextThreshold : MAX_TARGET;
+
+        const pct = barTarget ? Math.min((currentAmount / barTarget) * 100, 100) : 0;
         document.getElementById('progress-fill').style.width = pct + '%';
         document.getElementById('bottom-amount').textContent =
-            cfg.currency + ' ' + Math.floor(currentAmount) + ' / ' + GOAL_TARGET;
+            cfg.currency + ' ' + Math.floor(currentAmount) + ' / ' + barTarget;
     }
 
     updateWidget();

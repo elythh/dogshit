@@ -529,9 +529,10 @@
             `rgba(${Math.round((r*.22+23.868)/aOut)},${Math.round((g*.22+23.868)/aOut)},${Math.round((b*.22+23.868)/aOut)},${aOut.toFixed(4)})`);
     }
 
-    // ?reset efface le montant persisté et repart de startAmount
+    // ?reset clears both persisted values
     if (new URLSearchParams(window.location.search).has('reset')) {
         localStorage.removeItem('goalAmount');
+        localStorage.removeItem('goalStartAmount');
     }
 
     document.documentElement.style.setProperty('--accent',       cfg.accentColor);
@@ -557,8 +558,15 @@
     // Sort goals descending by threshold
     cfg.goals.sort((a, b) => a.threshold - b.threshold);
 
-    // Persist amount across reloads, seeded with startAmount on first visit
-    let currentAmount = parseFloat(localStorage.getItem('goalAmount') ?? cfg.startAmount);
+    // Restore the running total across reloads (crash-safe).
+    // If startAmount changed in the config URL it means an intentional reset,
+    // so we honour the new startAmount instead of the stale stored value.
+    const _storedAmount = parseFloat(localStorage.getItem('goalAmount'));
+    const _storedStart  = parseFloat(localStorage.getItem('goalStartAmount'));
+    let currentAmount = (!isNaN(_storedAmount) && _storedStart === cfg.startAmount)
+        ? _storedAmount
+        : cfg.startAmount;
+    localStorage.setItem('goalStartAmount', cfg.startAmount);
 
     // ── RENDER GOALS ───────────────────────────────────────────
     const widget   = document.getElementById('widget');

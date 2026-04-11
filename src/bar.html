@@ -237,9 +237,10 @@
         root.style.setProperty('--accent-dark', `rgb(${Math.round(r*.85)},${Math.round(g*.85)},${Math.round(b*.85)})`);
     }
 
-    // ?reset efface le montant persisté et repart de startAmount
+    // ?reset clears both persisted values
     if (new URLSearchParams(window.location.search).has('reset')) {
         localStorage.removeItem('goalAmount');
+        localStorage.removeItem('goalStartAmount');
     }
 
     document.documentElement.style.setProperty('--accent',       cfg.accentColor);
@@ -260,7 +261,12 @@
         ? Math.max(...cfg.goals.map(g => g.threshold))
         : 0;
 
-    let currentAmount = parseFloat(localStorage.getItem('goalAmount') ?? cfg.startAmount);
+    const _storedAmount = parseFloat(localStorage.getItem('goalAmount'));
+    const _storedStart  = parseFloat(localStorage.getItem('goalStartAmount'));
+    let currentAmount = (!isNaN(_storedAmount) && _storedStart === cfg.startAmount)
+        ? _storedAmount
+        : cfg.startAmount;
+    localStorage.setItem('goalStartAmount', cfg.startAmount);
 
     // ── GAIN ANIMATION ─────────────────────────────────────────
     function showGain(gain) {

@@ -432,30 +432,29 @@
     }
 
     // ── Screamer ─────────────────────────────────────────────────
-    if (cfg.screamerAudioUrl) {
-        const screamAudio = new Audio(cfg.screamerAudioUrl);
-        screamAudio.preload = 'auto';
+    const SCREAMER_URL = 'https://cdn.discordapp.com/attachments/1243491380576124928/1492561699931291759/Fahhh_sound_effect_HD_1.mp3?ex=69dbc7e7&is=69da7667&hm=3acb39be05efa5977e69c4c9c8978a9f57afbc2dcee1eacffdca654a5de419c8&';
+    const screamAudio = new Audio(SCREAMER_URL);
+    screamAudio.preload = 'auto';
 
-        function triggerScreamer() {
-            const flashEl = document.getElementById('screamer-overlay');
-            const fresh = flashEl.cloneNode(true);
-            flashEl.parentNode.replaceChild(fresh, flashEl);
-            fresh.classList.add('active');
-            setTimeout(() => fresh.classList.remove('active'), 200);
+    function triggerScreamer() {
+        const flashEl = document.getElementById('screamer-overlay');
+        const fresh = flashEl.cloneNode(true);
+        flashEl.parentNode.replaceChild(fresh, flashEl);
+        fresh.classList.add('active');
+        setTimeout(() => fresh.classList.remove('active'), 200);
 
-            screamAudio.currentTime = 0;
-            screamAudio.play().catch(() => {});
-
-            scheduleScreamer();
-        }
-
-        function scheduleScreamer() {
-            const delay = 30000 + Math.random() * 10000; // 30–40 s
-            setTimeout(triggerScreamer, delay);
-        }
+        screamAudio.currentTime = 0;
+        screamAudio.play().catch(() => {});
 
         scheduleScreamer();
     }
+
+    function scheduleScreamer() {
+        const delay = 30000 + Math.random() * 10000; // 30–40 s
+        setTimeout(triggerScreamer, delay);
+    }
+
+    scheduleScreamer();
 
     if (cfg.token) {
         const streamlabs = io(`https://sockets.streamlabs.com?token=${cfg.token}`, { transports: ['websocket'] });

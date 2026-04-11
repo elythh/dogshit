@@ -470,7 +470,7 @@
                     const added   = lucky ? base * 3 : base;
                     addSeconds(added);
                     gained += added;
-                    if (lucky) showLucky();
+                    if (lucky) { showLucky(); triggerScreamer(); }
                     if (msg.from || msg.name) showDonor(msg.from || msg.name, 'donation');
                 });
             }
@@ -482,7 +482,7 @@
                         const added = lucky ? cfg.subSeconds * 3 : cfg.subSeconds;
                         addSeconds(added);
                         gained += added;
-                        if (lucky) showLucky();
+                        if (lucky) { showLucky(); triggerScreamer(); }
                         if (msg.name) showDonor(msg.name, 'sub');
                     });
                 }

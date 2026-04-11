@@ -431,8 +431,11 @@
             if (eventData.for === 'twitch_account' || eventData.for === 'youtube_account') {
                 if (eventData.type === 'subscription' || eventData.type === 'resub') {
                     eventData.message.forEach(msg => {
-                        addSeconds(cfg.subSeconds);
-                        gained += cfg.subSeconds;
+                        const lucky = Math.random() < 0.05;
+                        const added = lucky ? cfg.subSeconds * 3 : cfg.subSeconds;
+                        addSeconds(added);
+                        gained += added;
+                        if (lucky) showLucky();
                         if (msg.name) showDonor(msg.name, 'sub');
                     });
                 }

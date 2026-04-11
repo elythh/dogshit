@@ -582,6 +582,14 @@
                 <input type="text" id="countdownLabel" value="Countdown">
             </div>
         </div>
+
+        <div class="field">
+            <label for="countdownAccentColor">Couleur du countdown</label>
+            <div class="color-row">
+                <input type="color" id="countdownAccentColor" value="#f6c90e">
+                <span class="color-hex" id="countdownAccentColorHex">#f6c90e</span>
+            </div>
+        </div>
     </div>
 
     <!-- Thème -->
@@ -794,6 +802,7 @@
     // ── Generate ───────────────────────────────────────────────
     function generate() {
         const accent = $('accentColor').value;
+        const countdownAccent = $('countdownAccentColor').value;
         const radius = Number($('borderRadius').value);
         const fontSize    = Number($('fontSize').value);
         const widgetWidth = Number($('widgetWidth').value);
@@ -801,7 +810,8 @@
         const scale       = Number($('scale').value);
 
         // Update live displays
-        $('accentColorHex').textContent     = accent;
+        $('accentColorHex').textContent          = accent;
+        $('countdownAccentColorHex').textContent = countdownAccent;
         $('borderRadiusValue').textContent  = radius + ' px';
         $('borderRadius').style.accentColor = accent;
         $('fontSizeValue').textContent      = fontSize    + ' px';
@@ -833,8 +843,9 @@
             startSeconds:    Number($('startSeconds').value)    || 600,
             subSeconds:      Number($('subSeconds').value)      || 60,
             donationSeconds: Number($('donationSeconds').value) || 10,
-            countdownIcon:   $('countdownIcon').value.trim()   || '⏱',
-            countdownLabel:  $('countdownLabel').value.trim()  || 'Countdown',
+            countdownIcon:   $('countdownIcon').value.trim()         || '⏱',
+            countdownLabel:  $('countdownLabel').value.trim()        || 'Countdown',
+            countdownAccentColor: countdownAccent,
             theme:        currentTheme,
             goals,
         };
@@ -850,7 +861,7 @@
     ['token', 'startAmount', 'subValue', 'accentColor', 'borderRadius',
      'fontSize', 'widgetWidth', 'rowGap', 'scale',
      'barLabel', 'currency', 'thankYouText',
-     'startSeconds', 'subSeconds', 'donationSeconds', 'countdownLabel'].forEach(id => {
+     'startSeconds', 'subSeconds', 'donationSeconds', 'countdownLabel', 'countdownAccentColor'].forEach(id => {
         $(id).addEventListener('input', generate);
     });
 
@@ -1008,6 +1019,10 @@
         if (cfg.subSeconds      !== undefined) $('subSeconds').value      = cfg.subSeconds;
         if (cfg.donationSeconds !== undefined) $('donationSeconds').value = cfg.donationSeconds;
         if (cfg.countdownLabel  !== undefined) $('countdownLabel').value  = cfg.countdownLabel;
+        if (cfg.countdownAccentColor !== undefined) {
+            $('countdownAccentColor').value = cfg.countdownAccentColor;
+            $('countdownAccentColorHex').textContent = cfg.countdownAccentColor;
+        }
         if (cfg.countdownIcon !== undefined) {
             $('countdownIcon').value = cfg.countdownIcon;
             document.getElementById('countdownIconBtn').textContent = cfg.countdownIcon;
